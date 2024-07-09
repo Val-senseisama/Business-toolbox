@@ -1,12 +1,12 @@
 {
-  "name": "business-toolbox",
+  "name": "Business Toolbox",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "Leke Ojikutu",
+  "author": "Techbox Labs",
   "license": "ISC",
-  "description": "Business Toolbox"
+  "description": ""
 }

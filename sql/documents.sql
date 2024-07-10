@@ -1,5 +1,5 @@
 CREATE TABLE
-    docs_types (
+    IF NOT EXISTS docs_types (
         id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
         company_id INT UNSIGNED NOT NULL,
         name VARCHAR(100) NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    docs_documents (
+    IF NOT EXISTS docs_documents (
         id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
         company_id INT UNSIGNED NOT NULL,
         branch_id INT UNSIGNED NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE
     );
 
 CREATE TABLE
-    docs_access_log (
+    IF NOT EXISTS docs_access_log (
         id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
         company_id INT UNSIGNED NOT NULL,
         branch_id INT UNSIGNED NOT NULL,

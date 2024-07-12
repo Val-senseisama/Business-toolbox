@@ -13,3 +13,25 @@ export type AuditTrailType = {
 	user_agent?: string,
 	created_at?: string,
 }
+
+export type ModelType = {
+	model: string,
+	aggregator?: boolean,
+	embedding?: boolean,
+	proposer?: boolean,
+	vision?: boolean,
+	image?: boolean,
+	speech?: boolean,
+	textbook?: boolean,
+	storybook?: boolean,
+	baseURL: string,
+	apiKey: string,
+	max_tokens: number,
+
+}
+
+export type LogType = {
+	task?: string,
+	message: string,
+	created_at?: string
+}

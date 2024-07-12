@@ -15,16 +15,18 @@
   "description": "",
   "dependencies": {
     "@apollo/server": "^4.10.4",
+    "axios": "^1.7.2",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "googlethis": "^1.8.0",
     "graphql": "^16.9.0",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.4.4",
     "mysql2": "^3.10.2",
     "nodemailer": "^6.9.14",
-    "ollama": "^0.5.2",
+    "openai": "^4.52.7",
     "uuid": "^10.0.0"
   },
   "devDependencies": {

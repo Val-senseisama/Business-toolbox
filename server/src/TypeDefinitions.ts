@@ -22,6 +22,24 @@ export default `#graphql
     getAlltransactions(company_id: Int, branch_id: Int, accounting_year_id: Int, offset: Int): [Transaction!]
     getAccounttransactions(company_id: Int, branch_id: Int, accounting_year_id: Int, account_id: Int, offset: Int): [Transaction!]
     getCodetransactions(company_id: Int, branch_id: Int, accounting_year_id: Int, code: Int, offset: Int): [Transaction!]
+    getTypetransactions(company_id: Int, branch_id: Int, accounting_year_id: Int, type: AccountTypes, offset: Int): [Transaction!]
+    getCategorytransactions(company_id: Int, branch_id: Int, accounting_year_id: Int, category: AccountCategoryTypes, offset: Int): [Transaction!]
+
+    getAllCustomers(company_id: Int, offset: Int): [Account!]
+    getAllVendors(company_id: Int, offset: Int): [Account!]
+
+    getAllPayrolls(company_id: Int, offset: Int): [Payroll!]
+
+
+    #### Phase 3
+    # HR
+    getAllDepartments(company_id: Int, offset: Int): [Department!]
+    getAllJobTitles(company_id: Int, offset: Int): [JobTitle!]
+    getAllEmployees(company_id: Int, offset: Int): [Account!]
+    getEmployeeQualifications(company_id: Int, employee_id: Int, offset: Int): [Qualification!]
+    getEmployeePerformanceReviews(company_id: Int, employee_id: Int, offset: Int): [PerformanceReview!]
+
+
   }
 
   type Mutation {
@@ -62,14 +80,56 @@ export default `#graphql
     updateLedger(id: Int, company_id: Int, branch_id: Int, details: LedgerDetails): Account!
     deleteLedger(company_id: Int, id: Int): Int #returns deleted account id
 
+    createCustomer(company_id: Int, branch_id: Int, details: CustomerDetails): Account!
+    updateCustomer(id: Int, company_id: Int, branch_id: Int, details: CustomerDetails): Account!
+    deleteCustomer(company_id: Int, id: Int): Int #returns deleted account id
+
+    createVendor(company_id: Int, branch_id: Int, details: VendorDetails): Account!
+    updateVendor(id: Int, company_id: Int, branch_id: Int, details: VendorDetails): Account!
+    deleteVendor(company_id: Int, id: Int): Int #returns deleted account id
+
     createAccountingYear(company_id: Int, name: String, start_date: String, end_date: String): AccountingYear!
     updateAccountingYear(id: Int, company_id: Int, name: String, start_date: String, end_date: String): AccountingYear! #cant update a closed accounting year and cant update start_date for an active accounting year
+    closeAccountingYear(id: Int, company_id: Int, new_accounting_year_id: id): Int
     deleteAccountingYear(company_id: Int, id: Int): Int #returns deleted accounting year id, cant only delete a pending accounting year
     
     postTransaction( company_id: Int, branch_id: Int, source: [TransactionComponent!], destination: [TransactionComponent!], value_date: String, remarks: String): [Transaction!]
     deleteTransaction(company_id: Int, branch_id: Int, id: Int): String #returns deleted transaction code
 
-  }
+    createPayroll(company_id: Int, branch_id: Int, name: String, schedule: [SalarySchedule] ): Payroll!
+    updatePayroll(id: Int, company_id: Int, branch_id: Int, name: String, schedule: [SalarySchedule] ): Payroll!
+    deletePayroll(company_id: Int, id: Int): Int #returns deleted payroll id
+
+    postPayrollLiability(company_id: Int, branch_id: Int, payroll_id: Int, header_name: String): Int
+    postPayrollExpense(company_id: Int, branch_id: Int, payroll_id: Int, header_name: String, bank_id: Int): Int
+
+
+
+    #### Phase 3
+    # HR
+    createDepartment(company_id: Int, name: String, description: String): Department!
+    updateDepartment(id: Int, company_id: Int, name: String, description: String): Department!
+    deleteDepartment(id: Int): Int #returns deleted department id
+
+    createJobTitle(company_id: Int, name: String, description: String): JobTitle!
+    updateJobTitle(id: Int, company_id: Int, name: String, description: String): JobTitle!
+    deleteJobTitle(id: Int): Int #returns deleted job title id
+
+    createEmployee(company_id: Int, branch_id: Int, details: EmployeeDetails): Account!
+    updateEmployee(id: Int, company_id: Int, branch_id: Int, details: EmployeeDetails): Account!
+    deleteEmployee(id: Int): Int #returns deleted employee id
+
+    createQualification(company_id: Int, employee_id: Int, type: QualificationTypes, date_obtained: String, description: String): Qualification!
+    updateQualification(id: Int, company_id: Int, employee_id: Int, type: QualificationTypes, date_obtained: String, description: String): Qualification!
+    deleteQualification(id: Int): Int #returns deleted qualification id
+
+    createPerformanceReview(company_id: Int, employee_id: Int, reviewer_id: Int, review_date: String, rating: Int, comments: String): PerformanceReview!
+    updatePerformanceReview(id: Int, company_id: Int, employee_id: Int, reviewer_id: Int, review_date: String, rating: Int, comments: String): PerformanceReview!
+    deletePerformanceReview(id: Int): Int #returns deleted performance review id
+
+
+
+     }
 
 type JWT {
     accessToken: String!
@@ -83,7 +143,7 @@ type JWT {
     lastname: String!
     email: String!
     phone: String
-    date_of_Birth: String
+    date_of_birth: String
     gender: String!
     data: JSON
     settings: JSON
@@ -158,7 +218,72 @@ type Account {
 
 type LedgerDetails {
     name: String
-    description: JSON
+    description: String
+}
+
+type CustomerDetails {
+    name: String
+    phone: String
+    email: String
+    description: String
+}
+
+type VendorDetails {
+    name: String
+    description: String
+    address: String
+    city: String
+    state: String
+    country: String
+    phone: String
+    email: String
+    website: String
+    bank_name: String
+    bank_account_name: String
+    bank_account_number: String
+}
+
+type EmployeeDetails {
+    employee_id: String
+    job_title_id: Int
+    department_id: Int
+    salary_id: Int
+    manager_id: Int
+    firstname: String
+    middlename: String
+    lastname: String
+    photo_url: String
+    gender: String
+    nationality: String
+    email: String
+    phone: String
+    bank_name: String
+    bank_account_name: String
+    bank_account_number: String
+    gross_salary: Float
+    loan_repayment: Float
+    penalties: Float
+    union_dues: Float
+    health: Float
+    retirements: Float
+    other_deductions: Float
+    income_tax: Float
+    date_of_hire: String
+    address: String
+    city: String
+    state: String
+    country: String
+    next_of_kin_name: String
+    next_of_kin_phone: String
+    next_of_kin_address: String
+    next_of_kin_relationship: String
+    next_of_kin_email: String
+    next_of_kin_gender: String
+    next_of_kin_occupation: String
+    date_of_birth: String
+    emergency_contact: String
+    employment_type: String #Permanent, Contract, Internship
+    leave_balance: String
 }
 
 enum AccountTypes {
@@ -210,5 +335,96 @@ type TransactionComponent {
     account_id: Int
     amount: Float
 }
+
+type Department {
+    id: Int
+    name: String
+    description: String
+    created_at: String
+    updated_at: String
+}
+
+type JobTitle {
+    id: Int
+    name: String
+    description: String
+    created_at: String
+    updated_at: String
+}
+
+enum QualificationTypes {
+  EXPERIENCE
+  EDUCATION
+  CERTIFICATION
+  OTHERS
+}
+
+type Qualification {
+    id: Int
+    company_id: Int
+    employee_id: Int
+    type: QualificationTypes
+    description: String
+    date_obtained: String
+    created_at: String
+    updated_at: String
+}
+
+type PerformanceReview {
+    id: Int
+    company_id: Int
+    employee_id: Int
+    reviewer_id: Int
+    review_date: String
+    rating: Int
+    comments: String
+    created_at: String
+    updated_at: String
+}
+
+type SalarySchedule {
+    employee_id: Int
+    employee_name: String
+    employee_bank_details: String
+    gross_pay: Float
+    loan_repayment: Float
+    penalties: Float
+    union_dues: Float
+    health: Float
+    retirements: Float
+    other_deductions: Float
+    income_tax: Float
+    net_pay: Float
+}
+
+type Payroll {
+    id: Int
+    company_id: Int
+    branch_id: Int
+    name: String
+    code: String
+    schedule: [SalarySchedule]
+    salaries_total: Float
+    tax_total: Float
+    salaries_liabilities_posted: Int
+    salaries_expenses_posted: Int
+    loan_liabilities_posted: Int
+    loan_expenses_posted: Int
+    penalties_liabilities_posted: Int
+    penalties_expenses_posted: Int
+    union_dues_liabilities_posted: Int
+    union_dues_expenses_posted: Int
+    health_liabilities_posted: Int
+    health_expenses_posted: Int
+    retirements_liabilities_posted: Int
+    retirements_expenses_posted: Int
+    other_deductions_liabilities_posted: Int
+    other_deductions_expenses_posted: Int
+    tax_liabilities_posted: Int
+    tax_expenses_posted: Int
+    created_at: String
+    updated_at: String
+}
+
 
 `;

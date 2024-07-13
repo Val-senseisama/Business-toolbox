@@ -8,17 +8,17 @@ export default `#graphql
     getConfig: JSON  
     getMyCompanies: [CompanyBasic!]
     getFullCompanyProfile(company_id: Int): Company!
-    getUsersLinkedToMyCompany(company_id: Int): [UserBasic!]
-    getAllCompanyBranches(company_id: Int): [Branch!]
-    getAllCompanyUsers(company_id: Int): [UserBasic!]
-    getAllCompanyRoles(company_id: Int): [Role!]
+    getUsersLinkedToMyCompany(company_id: Int, offset: Int): [UserBasic!]
+    getAllCompanyBranches(company_id: Int, offset: Int): [Branch!]
+    getAllCompanyUsers(company_id: Int, offset: Int): [UserBasic!]
+    getAllCompanyRoles(company_id: Int, offset: Int): [Role!]
     getMyPendingCompanyLinks: [CompanyBasic!]
 
 
     #### Phase 2
     # Accounting
-    getAllLedgers(company_id: Int): [Account!]
-    getAllAccountingyears(company_id: Int): [AccountingYear!]
+    getAllLedgers(company_id: Int, offset: Int): [Account!]
+    getAllAccountingyears(company_id: Int, offset: Int): [AccountingYear!]
     getAlltransactions(company_id: Int, branch_id: Int, accounting_year_id: Int, offset: Int): [Transaction!]
     getAccounttransactions(company_id: Int, branch_id: Int, accounting_year_id: Int, account_id: Int, offset: Int): [Transaction!]
     getCodetransactions(company_id: Int, branch_id: Int, accounting_year_id: Int, code: Int, offset: Int): [Transaction!]

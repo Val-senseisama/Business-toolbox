@@ -12,6 +12,8 @@ CREATE TABLE
         ) DEFAULT 'STRAIGHT-LINE',
         useful_life_years INT UNSIGNED NOT NULL,
         salvage_value DECIMAL(10, 2),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 

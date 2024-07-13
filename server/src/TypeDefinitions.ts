@@ -24,10 +24,8 @@ export default `#graphql
     getCodetransactions(company_id: Int, branch_id: Int, accounting_year_id: Int, code: Int, offset: Int): [Transaction!]
     getTypetransactions(company_id: Int, branch_id: Int, accounting_year_id: Int, type: AccountTypes, offset: Int): [Transaction!]
     getCategorytransactions(company_id: Int, branch_id: Int, accounting_year_id: Int, category: AccountCategoryTypes, offset: Int): [Transaction!]
-
     getAllCustomers(company_id: Int, offset: Int): [Account!]
     getAllVendors(company_id: Int, offset: Int): [Account!]
-
     getAllPayrolls(company_id: Int, offset: Int): [Payroll!]
 
 
@@ -39,6 +37,10 @@ export default `#graphql
     getEmployeeQualifications(company_id: Int, employee_id: Int, offset: Int): [Qualification!]
     getEmployeePerformanceReviews(company_id: Int, employee_id: Int, offset: Int): [PerformanceReview!]
 
+
+    #### Phase 4
+    # Fixed Assets
+    getAllAssetCategories(company_id: Int, offset: Int): [AssetCategory!]
 
   }
 
@@ -129,7 +131,15 @@ export default `#graphql
 
 
 
-     }
+    #### Phase 4
+    # Fixed Assets
+    createAssetCategory(company_id: Int, name: String, description: String, depreciation_method: String, useful_life_years: Float, salvage_value: Float): AssetCategory!
+    updateAssetCategory(id: Int, company_id: Int, name: String, description: String, depreciation_method: String, useful_life_years: Float, salvage_value: Float): AssetCategory!
+    deleteAssetCategory(id: Int): Int #returns deleted asset category id
+
+
+
+}
 
 type JWT {
     accessToken: String!
@@ -426,5 +436,16 @@ type Payroll {
     updated_at: String
 }
 
+type AssetCategory {
+    id: Int
+    company_id: Int
+    name: String
+    description: String
+    depreciation_method: String
+    useful_life_years: Float
+    salvage_value: Float
+    created_at: String
+    updated_at: String
+}
 
 `;

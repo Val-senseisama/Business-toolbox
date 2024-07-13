@@ -86,11 +86,12 @@
 // Usage: Provide a valid SQL query for execution.
 
 import "dotenv/config";
-import mysql from "mysql2/promise";
+// import mysql from "mysql2/promise";
+import * as mysql from 'mysql2/promise';
 import { ThrowError } from "./Helpers.js";
 
-let _DB;
- 
+let _DB: any;
+
 export const DBConnect = async () => {
 	try {
 		_DB = mysql.createPool({
@@ -102,8 +103,8 @@ export const DBConnect = async () => {
 			namedPlaceholders: true,
 			waitForConnections: true,
 			connectionLimit: 30,
-			maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`
-			idleTimeout: 300000, // idle connections timeout, in milliseconds, the default value 60000
+			maxIdle: 5, // max idle connections, the default value is the same as `connectionLimit`
+			// idleTimeout: 300000, // idle connections timeout, in milliseconds, the default value 60000
 			queueLimit: 0,
 			enableKeepAlive: true,
 			keepAliveInitialDelay: 0,

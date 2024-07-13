@@ -3,157 +3,50 @@ import fs from "fs";
 import { DateTime } from "luxon";
 import { DBObject } from "./MySQL.js";
 import _CONFIG from "../config/config.js";
-import { AuditTrailType } from "./types.js";
+import { AuditTrailType, LogType } from "./types.js";
+import CONFIG from "../config/config.js";
 
 const imageDir = _CONFIG.settings.PUBLIC_SHORT_FILE_PATH;
-const logIntervalMinutes: number = 5;
-let memoryCache: any[] = [];
-let logCache: string[] = [];
+let logCache: LogType[] = [];
 let pendingAuditTrails: AuditTrailType[] = [];
-const logFile = "syllabux_logs_" + DateTime.local().toISODate() + ".txt";
 
 setInterval(() => {
 	commitMemory();
-}, logIntervalMinutes * 60 * 1000);
+}, CONFIG.settings.SAVE_LOG_INTERVAL * 60 * 1000);
 
-export const log = async (msg: any) => {
-	logCache.push(
-		DateTime.local().toISOTime() + ": " + JSON.stringify(msg, null, 2)
-	);
-	if (logCache.length > 30) {
+export const log = async (task = 'LOG', msg: any): Promise<void> => {
+	if (typeof msg != "string") msg = JSON.stringify(msg, null, 2);
+	logCache.push({ created_at: DateTime.local().toISOTime(), task, message: msg });
+	if (logCache.length > CONFIG.settings.MAX_LOG_STACK) {
 		commitMemory();
 	}
 };
 
-function commitMemory() {
+function commitMemory(): void {
 	if (pendingAuditTrails.length > 0) {
 		const auditTrails = pendingAuditTrails;
 		pendingAuditTrails = [];
-		DBObject.insertOne('audit_trail', auditTrails).catch(err => log(err));
+		DBObject.insertOne('audit_trail', auditTrails).catch(() => {
+			/** */
+		});
 	}
 
 	if (logCache.length == 0) return;
-	const str = logCache.join("\n\n") + "\n\n";
+	const data = logCache;
 	logCache = [];
-	try {
-		fs.appendFileSync(logFile, str);
-	} catch (err) {
-		/** */
-	}
+	DBObject.insertMany("logs", data)
+		.catch(err => console.log(err));
 }
 
-export const findFromMemory = async ({ query, table, hours = 24 }) => {
-	// remove expired elements from cache
-	memoryCache = memoryCache.filter(
-		(element) => DateTime.now().toSeconds() > element.time
-	);
 
-	const element = memoryCache.find((element) => element.key == query);
-	if (element && element.data) {
-		return element.data;
-	} else {
-		try {
-			const data = await DBObject.findDirect(query);
-			memoryCache.push({
-				key: query,
-				table,
-				data,
-				time: DateTime.now().toSeconds() + hours * 60 * 60,
-			});
-			return data;
-		} catch (err) {
-			log(err);
-			return [];
-		}
-	}
-};
-
-export const resetMemory = (table: string = "") => {
-	if (!table) {
-		memoryCache = [];
-		return;
-	}
-	memoryCache = memoryCache.filter(
-		(element) =>
-			DateTime.now().toSeconds() > element.time && element.table != table
-	);
-	return;
-};
-
-export const ThrowError = (message: string) => {
+export const ThrowError = (message: string): never => {
 	throw new GraphQLError(message, {
 		extensions: { code: "USER" },
 	});
 };
 
-export const HasStudentPermission = (data: {
-	studentID: number;
-	context: any;
-	schoolID: number;
-}) => {
-	const { studentID, context, schoolID } = data;
-	if (
-		!context ||
-		!context.id ||
-		!context.code ||
-		!schoolID ||
-		!studentID ||
-		studentID != context.id
-	) {
-		return false;
-	}
 
-	const parts = context.code.split("-");
-	if (parts.length !== 3 || schoolID != +parts[1] || studentID != +parts[2]) {
-		return false;
-	}
-	return true;
-};
-
-export const HasParentPermission = (data: {
-	studentID: number;
-	context: any;
-	schoolID: number;
-}) => {
-	const { studentID, context, schoolID } = data;
-	if (
-		!context ||
-		!context.id ||
-		!context.children ||
-		context.children.length == 0 ||
-		!context.children?.includes(studentID)
-	) {
-		return false;
-	}
-	return true;
-};
-
-export const HasSchoolPermission = (data: {
-	task: string;
-	schoolID: number;
-	context: any;
-}): boolean => {
-	const { task, schoolID, context } = data;
-	if (!context || context.id < 1 || !schoolID || !context.roles["" + schoolID])
-		return false;
-	if (context.roles["" + schoolID] == "OWNER") return true;
-	if (context.roles["" + schoolID].length > 0 && task == "ANY") return true;
-	let allowed = false;
-	context.roles["" + schoolID].map((obj: string) => {
-		if (obj === task) allowed = true;
-	});
-	return allowed;
-};
-
-export const HasAdminPermission = (data: {
-	roleName: string;
-	context: any;
-}): boolean => {
-	const { roleName, context } = data;
-	return context.ar?.includes(roleName);
-};
-
-export const MakeID = (length: number) => {
+export const MakeID = (length: number): string => {
 	var result = "";
 	var characters = "ABCDEFGHJKLMNPQRTUVWXY346789";
 	var charactersLength = characters.length;
@@ -164,7 +57,7 @@ export const MakeID = (length: number) => {
 };
 
 // create a function to generate uuid v4
-export const uuid = () => {
+export const uuid = (): string => {
 	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
 		var r = (Math.random() * 16) | 0,
 			v = c == "x" ? r : (r & 0x3) | 0x8;
@@ -172,7 +65,7 @@ export const uuid = () => {
 	});
 };
 
-export const base64ToFile = (str: string, schoolID: number) => {
+export const base64ToFile = (str: string, schoolID: number): string => {
 	if (!str) return "";
 	if (!str.includes(";base64,")) return str;
 	const b64Parts = str.split(";base64,");
@@ -187,7 +80,7 @@ export const base64ToFile = (str: string, schoolID: number) => {
 		try {
 			fs.mkdirSync(imageDir + schoolIDx, { recursive: true });
 		} catch (err) {
-			log(`Error creating directory ${imageDir + schoolIDx}.`);
+			log('base64ToFile', err);
 		}
 	}
 
@@ -196,7 +89,7 @@ export const base64ToFile = (str: string, schoolID: number) => {
 			encoding: "base64",
 		});
 	} catch (err) {
-		log(err);
+		log('base64ToFile', err);
 		ThrowError("An error occured while trying to save image.");
 	}
 
@@ -207,7 +100,7 @@ export const saveFirebaseMessage = async (
 	studentIDs: number[],
 	topic: string,
 	message: string
-) => {
+): Promise<void> => {
 	if (studentIDs.length < 1) return;
 	try {
 		let parents = await DBObject.findDirect(
@@ -232,12 +125,12 @@ export const saveFirebaseMessage = async (
 			await DBObject.insertMany("firebase", codes);
 		}
 	} catch (error) {
-		log(error);
+		log('saveFirebaseMessage', error);
 	}
 };
 
 
-export const SaveAuditTrail = async (data: AuditTrailType) => {
+export const SaveAuditTrail = async (data: AuditTrailType): Promise<void> => {
 	data.old_values || (data.old_values = "");
 	data.new_values || (data.new_values = "");
 	data.ip_address || (data.ip_address = "");
@@ -245,9 +138,7 @@ export const SaveAuditTrail = async (data: AuditTrailType) => {
 	data.created_at = DateTime.now().toSQL();
 
 	pendingAuditTrails.push(data);
-	if (pendingAuditTrails.length > 30) {
-		const auditTrails = pendingAuditTrails;
-		pendingAuditTrails = [];
-		DBObject.insertOne('audit_trail', auditTrails).catch(err => log(err));
+	if (pendingAuditTrails.length > CONFIG.settings.MAX_LOG_STACK) {
+		commitMemory();
 	}
 };

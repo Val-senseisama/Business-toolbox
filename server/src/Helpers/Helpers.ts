@@ -26,7 +26,9 @@ function commitMemory(): void {
 	if (pendingAuditTrails.length > 0) {
 		const auditTrails = pendingAuditTrails;
 		pendingAuditTrails = [];
-		DBObject.insertOne('audit_trail', auditTrails).catch(err => log(err));
+		DBObject.insertOne('audit_trail', auditTrails).catch(() => {
+			/** */
+		});
 	}
 
 	if (logCache.length == 0) return;
@@ -37,7 +39,7 @@ function commitMemory(): void {
 }
 
 
-export const ThrowError = (message: string) => {
+export const ThrowError = (message: string): never => {
 	throw new GraphQLError(message, {
 		extensions: { code: "USER" },
 	});

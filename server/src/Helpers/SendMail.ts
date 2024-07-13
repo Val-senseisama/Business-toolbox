@@ -1,11 +1,11 @@
 // 'use strict';
 import nodemailer from "nodemailer";
 import fs from "fs";
-import _CONFIG from "../config/config.js";
+import CONFIG from "../config/config.js";
 import settings from "../config/emailSettings.js";
 
 const template = fs.readFileSync(
-	_CONFIG.BASE + "Templates/newEmailTemplate.html",
+	CONFIG.BASE + "Templates/email.html",
 	"utf8"
 );
 
@@ -17,7 +17,7 @@ let transporter = nodemailer.createTransport({
 		user: settings.smtpUsername, // generated ethereal user
 		pass: settings.smtpPassword, // generated ethereal password
 	},
-}); 
+});
 
 type MailInput = {
 	recipients: string;

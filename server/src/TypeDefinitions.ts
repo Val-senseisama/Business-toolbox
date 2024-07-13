@@ -46,7 +46,7 @@ export default `#graphql
     getAssetsByLocation(company_id: Int, status: AssetStatus, location_id: Int, offset: Int): [FixedAsset!]
     getAssetsByVendor(company_id: Int, status: AssetStatus, vendor_id: Int, offset: Int): [FixedAsset!]
     getAssetsByPurchaseDate(company_id: Int, status: AssetStatus, purchase_date_start: String, purchase_date_end: String, offset: Int): [FixedAsset!]
-    getAssetDepreciation(company_id: Int, asset_id: Int, offset: Int): [FixedAsset!]
+    getAssetDepreciation(company_id: Int, asset_id: Int, offset: Int): [AssetDepreciation!]
 
   }
 
@@ -484,5 +484,19 @@ enum AssetStatus {
   DISPOSED
 }
 
+type AssetDepreciation {
+    id: Int
+    company_id: Int
+    item_id: Int
+    tx_code: String
+    depreciation_method: DepreciationMethod
+    depreciation_amount: Float
+    created_at: String
+}
 
+enum DepreciationMethod {
+  STRAIGHT-LINE
+  DECLINING-BALANCE
+  SUM-OF-YEARS-DIGITS
+  UNITS-OF-PRODUCTION
 `;

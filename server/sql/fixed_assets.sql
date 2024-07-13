@@ -52,7 +52,6 @@ CREATE TABLE
     IF NOT EXISTS fixed_assets_depreciation (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
-        branch_id INT UNSIGNED NOT NULL,
         item_id INT UNSIGNED NOT NULL,
         tx_code VARCHAR(100) NOT NULL,
         depreciation_method ENUM (
@@ -63,7 +62,7 @@ CREATE TABLE
         ) DEFAULT 'STRAIGHT-LINE',
         depreciation_amount DECIMAL(20, 4) NOT NULL,
         depreciation_date DATE NOT NULL,
-        FOREIGN KEY (aitem_id) REFERENCES fixed_assets_items (id) ON DELETE CASCADE,
-        FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
-        FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE CASCADE
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (item_id) REFERENCES fixed_assets_items (id) ON DELETE CASCADE,
+        FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );

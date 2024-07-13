@@ -32,7 +32,13 @@ CREATE TABLE
         purchase_date DATE NOT NULL,
         purchase_cost DECIMAL(20, 4) NOT NULL,
         latest_value DECIMAL(20, 4) NOT NULL,
-        status ENUM ('ACTIVE', 'INACTIVE', 'MAINTENANCE', 'DISPOSED') DEFAULT 'ACTIVE',
+        status ENUM (
+            'ACTIVE',
+            'INACTIVE',
+            'DAMAGED',
+            'MAINTENANCE',
+            'DISPOSED'
+        ) DEFAULT 'ACTIVE',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         FOREIGN KEY (vendor_id) REFERENCES accounts (id) ON DELETE SET NULL,

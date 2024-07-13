@@ -40,7 +40,13 @@ export default `#graphql
 
     #### Phase 4
     # Fixed Assets
-    getAllAssetCategories(company_id: Int, offset: Int): [AssetCategory!]
+    getAllAssetCategories(company_id: Int, status: AssetStatus, offset: Int): [AssetCategory!]
+    getAllAssetsItems(company_id: Int, status: AssetStatus, offset: Int): [FixedAsset!]
+    getAssetsByCategory(company_id: Int, status: AssetStatus, category_id: Int, offset: Int): [FixedAsset!]
+    getAssetsByLocation(company_id: Int, status: AssetStatus, location_id: Int, offset: Int): [FixedAsset!]
+    getAssetsByVendor(company_id: Int, status: AssetStatus, vendor_id: Int, offset: Int): [FixedAsset!]
+    getAssetsByPurchaseDate(company_id: Int, status: AssetStatus, purchase_date_start: String, purchase_date_end: String, offset: Int): [FixedAsset!]
+    getAssetDepreciation(company_id: Int, asset_id: Int, offset: Int): [FixedAsset!]
 
   }
 
@@ -137,7 +143,10 @@ export default `#graphql
     updateAssetCategory(id: Int, company_id: Int, name: String, description: String, depreciation_method: String, useful_life_years: Float, salvage_value: Float): AssetCategory!
     deleteAssetCategory(id: Int): Int #returns deleted asset category id
 
-
+    createAssetItem(company_id: Int, branch_id: Int, vendor_id: Int, location_id: Int, category_id: Int, tag: String, serial_number: String, name: String, description: String, purchase_date: String, purchase_cost: Float, latest_value: Float, status: AssetStatus): FixedAsset!
+    updateAssetCategory(id: Int, company_id: Int, branch_id: Int, vendor_id: Int, location_id: Int, category_id: Int, tag: String, serial_number: String, name: String, description: String, purchase_date: String, purchase_cost: Float, latest_value: Float, status: AssetStatus): FixedAsset!
+    deleteAssetItem(company_id: Int, id: Int): Int #returns deleted asset item id
+    
 
 }
 
@@ -447,5 +456,33 @@ type AssetCategory {
     created_at: String
     updated_at: String
 }
+
+type FixedAsset {
+    id: Int
+    company_id: Int
+    branch_id: Int
+    vendor_id: Int
+    location_id: Int
+    category_id: Int
+    tag: String
+    serial_number: String
+    name: String
+    description: String
+    purchase_date: String
+    purchase_cost: Float
+    latest_value: Float
+    status: AssetStatus
+    created_at: String
+    updated_at: String
+}
+
+enum AssetStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  DAMAGED
+  DISPOSED
+}
+
 
 `;

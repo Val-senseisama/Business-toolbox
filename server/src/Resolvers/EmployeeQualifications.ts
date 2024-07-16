@@ -3,7 +3,7 @@ import { DBObject } from "../Helpers/MySQL.js";
 import { DateTime } from "luxon";
 export default {
     Query:{
-        async getEmployeeQualifications(company_id, employee_id, offset) {
+        async getEmployeeQualifications(_,{company_id, employee_id, offset}) {
             const query = `
               SELECT id, company_id, employee_id, type, description, date_obtained, 
                      created_at, updated_at

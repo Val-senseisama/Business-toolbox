@@ -1,6 +1,6 @@
 import { ThrowError } from "../Helpers/Helpers.js";
 import { DBObject } from "../Helpers/MySQL.js";
-
+import { DateTime } from "luxon";
 export default {
     Query:{
         async getEmployeeQualifications(company_id, employee_id, offset) {
@@ -48,9 +48,16 @@ export default {
                 employee_id,
                 type,
                 date_obtained,
-                description
+                description,
+                created_at:  DateTime.now().toUTC().toISO(),
+                updated_at: DateTime.now().toUTC().toISO()
             };
 
+            const validTypes = ['EXPERIENCE', 'EDUCATION', 'CERTIFICATION', 'OTHERS'];
+            if (!validTypes.includes(type)) {
+              ThrowError('Invalid qualification type');
+            }
+            
             try {
                 const insertedId = await DBObject.insertOne("hr_qualifications", qualification);
                 return insertedId;
@@ -84,8 +91,8 @@ export default {
         },
         async deleteQualification(_,{id}){
             try {
-                const deleteID = await DBObject.deleteOne("hr_qualifications", {id})
-                return deleteID;
+                const deletedID = await DBObject.deleteOne("hr_qualifications", {id})
+                return deletedID;
             } catch (error) {
                 ThrowError("Error deleting HR qualification")
             }

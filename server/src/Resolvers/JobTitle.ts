@@ -1,5 +1,6 @@
 import { ThrowError } from "../Helpers/Helpers.js";
 import { DBObject } from "../Helpers/MySQL.js";
+import {DateTime} from "luxon"
 
 export default {
   Query: {
@@ -38,7 +39,9 @@ export default {
       const data = {
         company_id,
         name,
-        description
+        description,
+        created_at:  DateTime.now().toUTC().toISO(),
+        updated_at:  DateTime.now().toUTC().toISO(),
       }
 
       try {

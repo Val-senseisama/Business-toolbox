@@ -1,5 +1,6 @@
 import { ThrowError } from "../Helpers/Helpers.js";
 import { DBObject } from "../Helpers/MySQL.js";
+import { DateTime } from "luxon";
 
 export default {
     Query:{
@@ -27,8 +28,8 @@ export default {
                 ...review,
                 review_date: review.review_date.toISOString().split('T')[0],  
                 rating: parseInt(review.rating, 10),  
-                created_at: review.created_at.toISOString(),
-                updated_at: review.updated_at.toISOString()
+                created_at: review.created_at.toUTC().toISO(),
+                updated_at: review.updated_at.toUTC().toISO()
               }));
             } catch (error) {
               console.error("Error fetching employee performance reviews:", error);
@@ -44,7 +45,9 @@ export default {
                 reviewer_id: reviewer_id,
                 review_date: review_date,
                 rating: rating,
-                comments: comments
+                comments: comments,
+                created_at: DateTime.now().toUTC().toISO(),
+                updated_at: DateTime.now().toUTC().toISO() 
             };
             try {
                 const insertedID = await DBObject.insertOne("hr_performance_reviews", insertedData);

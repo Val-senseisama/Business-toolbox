@@ -1,5 +1,6 @@
 import { ThrowError } from "../Helpers/Helpers.js";
 import { DBObject } from "../Helpers/MySQL.js";
+import { DateTime } from "luxon";
 
 export default {
   Query:{
@@ -38,7 +39,9 @@ export default {
       const data = {
         company_id: company_id,
         name: name,
-        description: description
+        description: description,
+        created_at:  DateTime.now().toUTC().toISO(),
+        updated_at:  DateTime.now().toUTC().toISO(),
       };
       try {
         const insertId = await DBObject.insertOne('hr_departments', data);
@@ -48,14 +51,9 @@ export default {
         const newDepartment = await DBObject.findOne('hr_departments', { id: insertId });
         if (!newDepartment) {
           ThrowError('Failed to fetch created department');
-        }
-        return {
-          id: newDepartment.id,
-          name: newDepartment.name,
-          description: newDepartment.description,
-          created_at: newDepartment.created_at.toISOString(),
-          updated_at: newDepartment.updated_at.toISOString()
         };
+        return insertId;
+  
     
       } catch (error) {
         ThrowError("Error creating department");

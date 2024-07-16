@@ -1,6 +1,6 @@
 import { ThrowError } from "../Helpers/Helpers.js";
 import { DBObject } from "../Helpers/MySQL.js";
-
+import { DateTime } from "luxon";
 export default {
     Query:{
         async getAllEmployees(_,{company_id, offset}) {
@@ -11,7 +11,7 @@ export default {
               WHERE company_id = :company_id
                 AND type = 'EMPLOYEE'  
               ORDER BY id
-              LIMIT 10 OFFSET :offset
+              LIMIT 10 OFFSET:offset
             `;
           
             const params = {
@@ -24,12 +24,15 @@ export default {
               return results.map(account => ({
                 ...account,
                 details: JSON.parse(account.details),  
-                created_at: account.created_at.toISOString(), 
-                updated_at: account.updated_at.toISOString()
+                type: account.type.toUpperCase(),  
+                category: account.category.toUpperCase(),  
+                balance: parseFloat(account.balance),  
+               created_at: account.created_at.toUTC().toISO(),
+                updated_at: account.updated_at.toUTC().toISO()
               }));
             } catch (error) {
-              console.error("Error fetching employees:", error);
-              throw error;
+              // console.error("Error fetching employees:", error);
+              ThrowError("Failed fetching employees");
             }
           }
     },
@@ -41,7 +44,9 @@ export default {
           details: JSON.stringify(details),  
           type: 'EMPLOYEE',  
           category: 'STAFF',  
-          balance: 0  
+          balance: 0,
+          created_at: DateTime.now().toUTC().toISO(),
+          updated_at: DateTime.now().toUTC().toISO(), 
         };
         try {
           const inserteID = await DBObject.insertOne("accounts", data);

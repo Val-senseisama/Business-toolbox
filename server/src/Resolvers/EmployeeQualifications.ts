@@ -3,7 +3,7 @@ import { DBObject } from "../Helpers/MySQL.js";
 import { DateTime } from "luxon";
 export default {
     Query:{
-        async getEmployeeQualifications(_,{company_id, employee_id, offset}) {
+        async getEmployeeQualifications(_, {company_id, employee_id, offset}) {
             const query = `
               SELECT id, company_id, employee_id, type, description, date_obtained, 
                      created_at, updated_at
@@ -30,8 +30,7 @@ export default {
                 updated_at: qualification.updated_at.toISOString()
               }));
             } catch (error) {
-              console.error("Error fetching employee qualifications:", error);
-              throw error;
+              ThrowError("Failed to fetch employee qualification");
             }
           }
     },
@@ -68,7 +67,7 @@ export default {
 
         async  updateQualification(_,{id, company_id, employee_id, type, date_obtained, description}){
             if(!company_id){
-                ThrowError("Invalid company")
+                ThrowError("Invalid company ")
             }
             if(!employee_id){
                 ThrowError("Invalid employee ID")

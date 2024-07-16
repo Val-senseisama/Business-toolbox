@@ -4,8 +4,7 @@ import { DateTime } from "luxon";
 
 export default {
     Query:{
-
-        async getEmployeePerformanceReviews(company_id, employee_id, offset) {
+        async getEmployeePerformanceReviews(_,{company_id, employee_id, offset}) {
             const query = `
               SELECT id, company_id, employee_id, reviewer_id, review_date, rating, comments,
                      created_at, updated_at

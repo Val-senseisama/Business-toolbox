@@ -22,8 +22,7 @@ export default {
         const results = await DBObject.findDirect(query, params);
         return results;
       } catch (error) {
-        console.error("Error fetching departments:", error);
-        throw error;
+        ThrowError("Failed to find departments");
       }
     },
     
@@ -53,8 +52,6 @@ export default {
           ThrowError('Failed to fetch created department');
         };
         return insertId;
-  
-    
       } catch (error) {
         ThrowError("Error creating department");
       }
@@ -77,15 +74,13 @@ export default {
       const updatedData = {
         company_id,name, description
       }
-
       try {
-
         const existingDepartment = await DBObject.findOne('hr_departments', { id: id, company_id: company_id });
         if (!existingDepartment) {
           ThrowError("Department not found or does not belong to the specified company");
         }
 
-        const updatedID = await DBObject.updateOne("hr_departments", {id:id}, updatedData);
+        const updatedID = await DBObject.updateOne("hr_departments",updatedData, {id:id});
         return updatedID;
         
       } catch (error) {

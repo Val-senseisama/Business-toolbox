@@ -35,13 +35,16 @@ export default {
     },
     Mutation:{
       async createEmployee({_,company_id, branch_id, details}){
-        const insertEmployee = {
+        const data = {
           company_id: company_id,
           branch_id: branch_id,
-          details: details
+          details: JSON.stringify(details),  
+          type: 'EMPLOYEE',  
+          category: 'STAFF',  
+          balance: 0  
         };
         try {
-          const inserteID = await DBObject.insertOne("accountd", insertEmployee);
+          const inserteID = await DBObject.insertOne("accounts", data);
           return inserteID
         } catch (error) {
           ThrowError("Couldn't insert employee ")
@@ -61,7 +64,7 @@ export default {
           ThrowError("Error updating EMployee")
         }
       },
-      
+
       async deleteEmployee(_,{id}){
         try {
           const deletedID = await DBObject.deleteOne("accounts", {id: id});

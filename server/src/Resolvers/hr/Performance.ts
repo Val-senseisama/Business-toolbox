@@ -1,5 +1,5 @@
-import { SaveAuditTrail, ThrowError } from "../Helpers/Helpers.js";
-import { DBObject } from "../Helpers/MySQL.js";
+import { SaveAuditTrail, ThrowError } from "../../Helpers/Helpers.js";
+import { DBObject } from "../../Helpers/MySQL.js";
 import { DateTime } from "luxon";
 
 export default {
@@ -14,27 +14,27 @@ export default {
               ORDER BY review_date DESC, id DESC
               LIMIT 10 OFFSET :offset
             `;
-          
+
             const params = { company_id, employee_id, offset };
-          
+
             try {
                 const results = await DBObject.findDirect(query, params);
                 await SaveAuditTrail({
                     user_id: context.id,
                     email: context.email,
                     branch_id: context.branch_id,
-                    company_id:context.company_id,
+                    company_id: context.company_id,
                     task: "GET_EMPLOYEE_PERFORMANCE_REVIEWS",
                     details: `Retrieved performance reviews for employee ${employee_id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                  });
-               
-          
+                });
+
+
                 return results.map(review => ({
                     ...review,
-                    review_date: review.review_date.toISOString().split('T')[0],  
-                    rating: parseInt(review.rating, 10),  
+                    review_date: review.review_date.toISOString().split('T')[0],
+                    rating: parseInt(review.rating, 10),
                     created_at: review.created_at.toUTC().toISO(),
                     updated_at: review.updated_at.toUTC().toISO()
                 }));
@@ -43,12 +43,12 @@ export default {
                 ThrowError("Failed to fetch employee performance reviews");
             }
         }
-    }, 
+    },
     Mutation: {
         async createPerformanceReview(_, { company_id, employee_id, reviewer_id, review_date, rating, comments }, context) {
-            if(!context.id){
+            if (!context.id) {
                 ThrowError("RELOGIN")
-            } 
+            }
             if (!company_id) {
                 ThrowError("Invalid company");
             };
@@ -64,22 +64,22 @@ export default {
                 rating,
                 comments,
                 created_at: DateTime.now().toUTC().toISO(),
-                updated_at: DateTime.now().toUTC().toISO() 
+                updated_at: DateTime.now().toUTC().toISO()
             };
             try {
                 const insertedID = await DBObject.insertOne("hr_performance_reviews", insertedData);
-                
+
                 await SaveAuditTrail({
                     user_id: context.id,
                     email: context.email,
                     branch_id: context.branch_id,
-                    company_id:context.company_id,
+                    company_id: context.company_id,
                     task: "CREATE_PERFORMANCE_REVIEW",
                     details: `Created performance review for employee ${employee_id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                  });
-             
+                });
+
                 return insertedID;
             } catch (error) {
                 ThrowError("Error inserting performance review");
@@ -112,23 +112,23 @@ export default {
                     user_id: context.id,
                     email: context.email,
                     branch_id: context.branch_id,
-                    company_id:context.company_id,
+                    company_id: context.company_id,
                     task: "UPDATE_PERFORMANCE_REVIEW",
                     details: `Updated performance review ${id} for employee ${employee_id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                  });
+                });
 
-           
+
                 return updatedID;
             } catch (error) {
                 ThrowError("Error updating performance review");
             }
         },
         async deletePerformanceReview(_, { id }, context) {
-                if(!id){
-                    ThrowError("Invalid Id")
-                }
+            if (!id) {
+                ThrowError("Invalid Id")
+            }
             try {
                 const reviewToDelete = await DBObject.findOne("hr_performance_reviews", { id });
                 if (!reviewToDelete) ThrowError("Performance review not found");
@@ -139,12 +139,12 @@ export default {
                     user_id: context.id,
                     email: context.email,
                     branch_id: context.branch_id,
-                    company_id:context.company_id,
+                    company_id: context.company_id,
                     task: "DELETE_PERFORMANCE_REVIEW",
                     details: `Deleted performance review ${id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                  });
+                });
 
                 return deleteID;
             } catch (error) {

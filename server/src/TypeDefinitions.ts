@@ -29,7 +29,7 @@ export default `#graphql
     getAllPayrolls(company_id: Int, offset: Int): [Payroll!]
 
 
-    #### Phase 3 
+    #### Phase 3
     # HR
     getAllDepartments(company_id: Int, offset: Int): [Department!]
     getAllJobTitles(company_id: Int, offset: Int): [JobTitle!]
@@ -38,7 +38,7 @@ export default `#graphql
     getEmployeePerformanceReviews(company_id: Int, employee_id: Int, offset: Int): [PerformanceReview!]
 
 
-    #### Phase 4
+    #### Phase 4m
     # Fixed Assets
     getAllAssetCategories(company_id: Int, status: AssetStatus, offset: Int): [AssetCategory!]
     getAllAssetsItems(company_id: Int, status: AssetStatus, offset: Int): [FixedAsset!]
@@ -54,7 +54,7 @@ export default `#graphql
     #### Phase 1
     # User Management, Authentication and Session Management
     login(email: String, password: String): JWT!
-    register(email: String, password: String, title: String, first_name: String, last_name: String, phone_number: String): Int!
+    register(email: String, password: String, title: String, firstname: String, lastname: String, phonenumber: String): Int!
     forgotPassword(email: String): Int!
     resetPassword(email: String, token: String, password: String): JWT!
     updateProfile( title: String, firstname: String,lastname: String, phone: String, gender: String,date_of_Birth: String): User!

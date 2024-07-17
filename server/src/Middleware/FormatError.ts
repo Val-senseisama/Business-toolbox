@@ -7,7 +7,7 @@ const formatError = (error: GraphQLFormattedError): GraphQLFormattedError => {
     }
 
     if (error.extensions.code != 'USER') {
-        log(error);
+        log('ERROR', error);
         return new Error('Internal server error');
     }
     return error;

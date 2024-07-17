@@ -2,18 +2,28 @@ export type ObjectType = {
 	[index: string]: any;
 };
 
+// export type AuditTrailType = {
+// 	user_id: number,
+// 	email: string,
+// 	action: string,
+// 	description: string,
+// 	old_values?: string,
+// 	new_values?: string,
+// 	ip_address?: string,
+// 	user_agent?: string,
+// 	created_at?: string,
+// }
 export type AuditTrailType = {
-	user_id: number,
-	email: string,
-	action: string,
-	description: string,
-	old_values?: string,
-	new_values?: string,
-	ip_address?: string,
-	user_agent?: string,
-	created_at?: string,
+	user_id:number, 
+	email:string, 
+	company_id:number, 
+	branch_id:number, 
+	browser_agents:string, 
+	task:string, 
+	details:any, 
+	ip_address ?:string, 
+	created_at ?:string 
 }
-
 export type ModelType = {
 	model: string,
 	aggregator?: boolean,

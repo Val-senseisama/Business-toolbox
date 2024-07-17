@@ -29,7 +29,7 @@ export default `#graphql
     getAllPayrolls(company_id: Int, offset: Int): [Payroll!]
 
 
-    #### Phase 3
+    #### Phase 3 
     # HR
     getAllDepartments(company_id: Int, offset: Int): [Department!]
     getAllJobTitles(company_id: Int, offset: Int): [JobTitle!]

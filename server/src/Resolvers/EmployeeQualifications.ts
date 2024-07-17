@@ -47,8 +47,12 @@ export default {
     },
     Mutation: {
         async createQualification(_, { company_id, employee_id, type, date_obtained, description }, context) {
-            if (!company_id) ThrowError("Invalid company");
-            if (!employee_id) ThrowError("Invalid employee ID");
+            if (!company_id) {
+                ThrowError("Invalid company")
+            };
+            if (!employee_id) {
+                ThrowError("Invalid employee ID")
+            };
 
             const validTypes = ['EXPERIENCE', 'EDUCATION', 'CERTIFICATION', 'OTHERS'];
             if (!validTypes.includes(type)) {
@@ -86,8 +90,12 @@ export default {
             }
         },
         async updateQualification(_, { id, company_id, employee_id, type, date_obtained, description }, context) {
-            if (!company_id) ThrowError("Invalid company");
-            if (!employee_id) ThrowError("Invalid employee ID");
+            if (!company_id) {
+                ThrowError("Invalid company")
+            };
+            if (!employee_id) {
+                ThrowError("Invalid employee ID")
+            };
             
             const updatedData = {
                 company_id,
@@ -99,8 +107,6 @@ export default {
             };
             try {
                 const updatedID = await DBObject.updateOne("hr_qualifications", updatedData, { id });
-
-
                 await SaveAuditTrail({
                     user_id: context.id,
                     email: context.email,
@@ -121,7 +127,9 @@ export default {
         async deleteQualification(_, { id }, context) {
             try {
                 const qualificationToDelete = await DBObject.findOne("hr_qualifications", { id });
-                if (!qualificationToDelete) ThrowError("Qualification not found");
+                if (!qualificationToDelete) {
+                    ThrowError("Qualification not found")
+                };
 
                 const deletedID = await DBObject.deleteOne("hr_qualifications", { id });
 

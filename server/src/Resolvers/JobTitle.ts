@@ -35,8 +35,12 @@ export default {
   },
   Mutation: {
     async createJobTitle(_, { company_id, name, description }, context) {
-      if (!company_id) ThrowError("Invalid company");
-      if (!name) ThrowError("Invalid name");
+      if (!company_id){
+        ThrowError("Invalid company");
+      }
+      if (!name) {
+        ThrowError("Invalid name");
+      }
 
       const data = {
         company_id,
@@ -69,8 +73,12 @@ export default {
       }
     },
     async updateJobTitle(_, { id, company_id, name, description }, context) {
-      if (!company_id) ThrowError("Invalid company");
-      if (!name) ThrowError("Invalid name");
+      if (!company_id) {
+        ThrowError("Invalid company")
+      };
+      if (!name) {
+        ThrowError("Invalid name")
+      };
 
       const updatedData = {
         company_id,
@@ -98,11 +106,15 @@ export default {
       }
     },
     async deleteJobTitle(_, { id }, context) {
-      if (!id) ThrowError("Invalid ID");
+      if (!id) {
+        ThrowError("Invalid ID")
+    };
 
       try {
         const jobTitleToDelete = await DBObject.findOne("hr_job_titles", { id });
-        if (!jobTitleToDelete) ThrowError("Job title not found");
+        if (!jobTitleToDelete) {
+          ThrowError("Job title not found")
+        };
 
         const deletedID = await DBObject.deleteOne("hr_job_titles", { id });
         await SaveAuditTrail({

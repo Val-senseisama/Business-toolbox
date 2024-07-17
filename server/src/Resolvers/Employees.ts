@@ -29,15 +29,7 @@ export default {
                   browser_agents: context.userAgent,
                   ip_address: context.ip
                 });
-                // await SaveAuditTrail({
-                //     user_id: context.user.id,
-                //     email: context.user.email,
-                //     company_id,
-                //     task: "GET_ALL_EMPLOYEES",
-                //     details: `Retrieved employees for company ${company_id}`,
-                //     browser_agents: context.userAgent,
-                //     ip_address: context.ip
-                // });
+             
                 return results.map(account => ({
                     ...account,
                     details: JSON.parse(account.details),  
@@ -55,6 +47,12 @@ export default {
     },
     Mutation: {
         async createEmployee(_, { company_id, branch_id, details }, context) {
+          if(!context.id){
+            ThrowError("RELOGIN")
+          };
+          if(!company_id){
+            ThrowError("Invalid company");
+          }
             const data = {
                 company_id,
                 branch_id,
@@ -85,6 +83,16 @@ export default {
             }
         },
         async updateEmployee(_, { id, company_id, branch_id, details }, context) {
+          if(!context.id){
+            ThrowError("RELOGIN")
+          };
+          if(!company_id){
+            ThrowError("Invalid company");
+          }
+          if(!id){
+            ThrowError("Invalid employee ID")
+          };
+
             const updatedData = {
                 company_id,
                 branch_id,
@@ -112,6 +120,9 @@ export default {
             }
         },
         async deleteEmployee(_, { id }, context) {
+          if(!id){
+            ThrowError("Invalid ID");
+          }
             try {
                 const employeeToDelete = await DBObject.findOne("accounts", { id, type: 'EMPLOYEE' });
                 if (!employeeToDelete) ThrowError("Employee not found");

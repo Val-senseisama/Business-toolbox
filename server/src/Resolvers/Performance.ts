@@ -46,6 +46,16 @@ export default {
     }, 
     Mutation: {
         async createPerformanceReview(_, { company_id, employee_id, reviewer_id, review_date, rating, comments }, context) {
+            if(!context.id){
+                ThrowError("RELOGIN")
+            } 
+            if (!company_id) {
+                ThrowError("Invalid company");
+            };
+
+            if (!employee_id) {
+                ThrowError("Invalid employee ID");
+            };
             const insertedData = {
                 company_id,
                 employee_id,
@@ -76,6 +86,16 @@ export default {
             }
         },
         async updatePerformanceReview(_, { id, company_id, employee_id, reviewer_id, review_date, rating, comments }, context) {
+
+            if (!context.id) {
+                ThrowError("RELOGIN");
+            };
+            if (!company_id) {
+                ThrowError("Invalid company");
+            };
+            if (!employee_id) {
+                ThrowError("Invalid employee ID");
+            };
             const updateData = {
                 company_id,
                 employee_id,
@@ -106,6 +126,9 @@ export default {
             }
         },
         async deletePerformanceReview(_, { id }, context) {
+                if(!id){
+                    ThrowError("Invalid Id")
+                }
             try {
                 const reviewToDelete = await DBObject.findOne("hr_performance_reviews", { id });
                 if (!reviewToDelete) ThrowError("Performance review not found");

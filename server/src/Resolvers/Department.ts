@@ -36,8 +36,12 @@ export default {
   },
   Mutation: {
     async createDepartment(_, { company_id, name, description }, context) {
-      if (!company_id) ThrowError("Invalid company");
-      if (!name) ThrowError("Invalid name");
+      if (!company_id) {
+        ThrowError("Invalid company")
+    };
+      if (!name) {
+        ThrowError("Invalid name")
+      };
 
       const data = {
         company_id,
@@ -64,8 +68,6 @@ export default {
           browser_agents: context.userAgent,
           ip_address: context.ip
         });
-     
-
         return insertId;
       } catch (error) {
         ThrowError("Error creating department");
@@ -73,9 +75,15 @@ export default {
     },
 
     async updateDepartment(_, { id, company_id, name, description }, context) {
-      if (!id) ThrowError("Invalid department ID");
-      if (!company_id) ThrowError("Invalid company");
-      if (!name) ThrowError("Invalid name");
+      if (!id) {
+        ThrowError("Invalid department ID")
+    };
+      if (!company_id) {
+        ThrowError("Invalid company")
+      };
+      if (!name) {
+        ThrowError("Invalid name")
+      };
 
       const updatedData = { company_id, name, description };
 
@@ -106,11 +114,15 @@ export default {
     },
 
     async deleteDepartment(_, { id }, context) {
-      if (!id) ThrowError("Invalid ID");
+      if (!id) {
+        ThrowError("Invalid ID")
+      };
       
       try {
         const departmentToDelete = await DBObject.findOne('hr_departments', { id });
-        if (!departmentToDelete) ThrowError("Department not found");
+        if (!departmentToDelete) {
+          ThrowError("Department not found")
+        };
 
         const deletedID = await DBObject.deleteOne("hr_departments", { id });
 
@@ -124,8 +136,6 @@ export default {
           browser_agents: context.userAgent,
           ip_address: context.ip
         });
-     
-
         return deletedID;
       } catch (error) {
         ThrowError("Error deleting department");

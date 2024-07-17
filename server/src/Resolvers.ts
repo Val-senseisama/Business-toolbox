@@ -1,13 +1,13 @@
-import Department from "./Resolvers/Department"
-import EmployeeQualifications from "./Resolvers/EmployeeQualifications"
-import Employees from "./Resolvers/Employees"
-import JobTitle from "./Resolvers/JobTitle"
-import Performance from "./Resolvers/Performance"
+import Department from "./Resolvers/hr/Department"
+import EmployeeQualifications from "./Resolvers/hr/EmployeeQualifications"
+import Employees from "./Resolvers/hr/Employees"
+import JobTitle from "./Resolvers/hr/JobTitle"
+import Performance from "./Resolvers/hr/Performance"
 
 
 
 export default {
-  Query:{
+  Query: {
     ...Department.Query,
     ...Employees.Query,
     ...JobTitle.Query,
@@ -16,7 +16,7 @@ export default {
 
 
   },
-  Mutation:{
+  Mutation: {
     ...Department.Mutation,
     ...EmployeeQualifications.Mutation,
     ...Employees.Mutation,

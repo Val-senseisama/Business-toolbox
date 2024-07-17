@@ -1,5 +1,5 @@
-import { SaveAuditTrail, ThrowError } from "../Helpers/Helpers.js";
-import { DBObject } from "../Helpers/MySQL.js";
+import { SaveAuditTrail, ThrowError } from "../../Helpers/Helpers.js";
+import { DBObject } from "../../Helpers/MySQL.js";
 import { DateTime } from "luxon";
 
 export default {
@@ -14,9 +14,9 @@ export default {
               ORDER BY date_obtained DESC, id DESC
               LIMIT 10 OFFSET :offset
             `;
-          
+
             const params = { company_id, employee_id, offset };
-          
+
             try {
                 const results = await DBObject.findDirect(query, params);
 
@@ -24,19 +24,19 @@ export default {
                     user_id: context.id,
                     email: context.email,
                     branch_id: context.branch_id,
-                    company_id:context.company_id,
+                    company_id: context.company_id,
                     task: "GET_EMPLOYEE_QUALIFICATIONS",
                     details: `Retrieved qualifications for employee ${employee_id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                  });
-             
-            
+                });
+
+
                 return results.map(qualification => ({
                     ...qualification,
-                    type: qualification.type.toUpperCase(),  
-                    date_obtained: qualification.date_obtained.toISOString().split('T')[0], 
-                    created_at: qualification.created_at.toISOString(), 
+                    type: qualification.type.toUpperCase(),
+                    date_obtained: qualification.date_obtained.toISOString().split('T')[0],
+                    created_at: qualification.created_at.toISOString(),
                     updated_at: qualification.updated_at.toISOString()
                 }));
             } catch (error) {
@@ -68,7 +68,7 @@ export default {
                 created_at: DateTime.now().toUTC().toISO(),
                 updated_at: DateTime.now().toUTC().toISO()
             };
-            
+
             try {
                 const insertedId = await DBObject.insertOne("hr_qualifications", qualification);
 
@@ -76,13 +76,13 @@ export default {
                     user_id: context.id,
                     email: context.email,
                     branch_id: context.branch_id,
-                    company_id:context.company_id,
+                    company_id: context.company_id,
                     task: "CREATE_QUALIFICATION",
                     details: `Created ${type} qualification for employee ${employee_id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                  });
-             
+                });
+
                 return insertedId;
             } catch (error) {
                 console.error("Error inserting HR Qualifications:", error);
@@ -96,7 +96,7 @@ export default {
             if (!employee_id) {
                 ThrowError("Invalid employee ID")
             };
-            
+
             const updatedData = {
                 company_id,
                 employee_id,
@@ -111,12 +111,12 @@ export default {
                     user_id: context.id,
                     email: context.email,
                     branch_id: context.branch_id,
-                    company_id:context.company_id,
+                    company_id: context.company_id,
                     task: "UPDATE_QUALIFICATION",
                     details: `Updated qualification ${id} for employee ${employee_id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                  });
+                });
 
                 return updatedID;
             } catch (error) {
@@ -142,8 +142,8 @@ export default {
                     details: `Deleted qualification ${id} for employee ${qualificationToDelete.employee_id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                  });
-            
+                });
+
                 return deletedID;
             } catch (error) {
                 console.error("Error deleting HR qualification:", error);

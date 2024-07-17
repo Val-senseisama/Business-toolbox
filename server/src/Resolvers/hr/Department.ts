@@ -1,5 +1,5 @@
-import { SaveAuditTrail, ThrowError } from "../Helpers/Helpers.js";
-import { DBObject } from "../Helpers/MySQL.js";
+import { SaveAuditTrail, ThrowError } from "../../Helpers/Helpers.js";
+import { DBObject } from "../../Helpers/MySQL.js";
 import { DateTime } from "luxon";
 
 export default {
@@ -12,9 +12,9 @@ export default {
         ORDER BY id
         LIMIT 10 OFFSET :offset
       `;
-    
+
       const params = { company_id, offset };
-    
+
       try {
         const results = await DBObject.findDirect(query, params);
 
@@ -38,7 +38,7 @@ export default {
     async createDepartment(_, { company_id, name, description }, context) {
       if (!company_id) {
         ThrowError("Invalid company")
-    };
+      };
       if (!name) {
         ThrowError("Invalid name")
       };
@@ -77,7 +77,7 @@ export default {
     async updateDepartment(_, { id, company_id, name, description }, context) {
       if (!id) {
         ThrowError("Invalid department ID")
-    };
+      };
       if (!company_id) {
         ThrowError("Invalid company")
       };
@@ -94,7 +94,7 @@ export default {
         }
 
         const updatedID = await DBObject.updateOne("hr_departments", updatedData, { id });
-        
+
 
         await SaveAuditTrail({
           user_id: context.id,
@@ -117,7 +117,7 @@ export default {
       if (!id) {
         ThrowError("Invalid ID")
       };
-      
+
       try {
         const departmentToDelete = await DBObject.findOne('hr_departments', { id });
         if (!departmentToDelete) {

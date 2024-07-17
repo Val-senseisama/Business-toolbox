@@ -1,5 +1,5 @@
-import { SaveAuditTrail, ThrowError } from "../Helpers/Helpers.js";
-import { DBObject } from "../Helpers/MySQL.js";
+import { SaveAuditTrail, ThrowError } from "../../Helpers/Helpers.js";
+import { DBObject } from "../../Helpers/MySQL.js";
 import { DateTime } from "luxon";
 
 export default {
@@ -25,7 +25,7 @@ export default {
           browser_agents: context.userAgent,
           ip_address: context.ip
         });
-       
+
         return results;
       } catch (error) {
         console.error("Error fetching job titles:", error);
@@ -35,7 +35,7 @@ export default {
   },
   Mutation: {
     async createJobTitle(_, { company_id, name, description }, context) {
-      if (!company_id){
+      if (!company_id) {
         ThrowError("Invalid company");
       }
       if (!name) {
@@ -65,7 +65,7 @@ export default {
           browser_agents: context.userAgent,
           ip_address: context.ip
         });
-     
+
         return insertedId;
       } catch (error) {
         console.error("Error inserting JobTitle:", error);
@@ -88,7 +88,7 @@ export default {
       };
       try {
         const updatedID = await DBObject.updateOne("hr_job_titles", updatedData, { id });
-      
+
         await SaveAuditTrail({
           user_id: context.id,
           email: context.email,
@@ -108,7 +108,7 @@ export default {
     async deleteJobTitle(_, { id }, context) {
       if (!id) {
         ThrowError("Invalid ID")
-    };
+      };
 
       try {
         const jobTitleToDelete = await DBObject.findOne("hr_job_titles", { id });

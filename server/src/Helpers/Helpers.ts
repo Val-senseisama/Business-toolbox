@@ -31,11 +31,11 @@ function commitMemory(): void {
 		});
 	}
 
-	if (logCache.length == 0) return;
+	/* if (logCache.length == 0) return;
 	const data = logCache;
 	logCache = [];
 	DBObject.insertMany("logs", data)
-		.catch(err => console.log(err));
+		.catch(err => console.log(err)); */
 }
 
 
@@ -130,20 +130,8 @@ export const saveFirebaseMessage = async (
 };
 
 
-// export const SaveAuditTrail = async (data: AuditTrailType): Promise<void> => {
-// 	data.old_values || (data.old_values = "");
-// 	data.new_values || (data.new_values = "");
-// 	data.ip_address || (data.ip_address = "");
-// 	data.user_agent || (data.user_agent = "");
-// 	data.created_at = DateTime.now().toSQL();
-
-// 	pendingAuditTrails.push(data);
-// 	if (pendingAuditTrails.length > CONFIG.settings.MAX_LOG_STACK) {
-// 		commitMemory();
-// 	}
-// };
-
 export const SaveAuditTrail = async (data: AuditTrailType): Promise<void> => {
+    // Set default values for optional properties
     data.ip_address = data.ip_address || "";
     data.created_at = data.created_at || DateTime.now().toSQL();
 

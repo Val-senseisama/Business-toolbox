@@ -130,15 +130,50 @@ export const saveFirebaseMessage = async (
 };
 
 
-export const SaveAuditTrail = async (data: AuditTrailType): Promise<void> => {
-	data.old_values || (data.old_values = "");
-	data.new_values || (data.new_values = "");
-	data.ip_address || (data.ip_address = "");
-	data.user_agent || (data.user_agent = "");
-	data.created_at = DateTime.now().toSQL();
+// export const SaveAuditTrail = async (data: AuditTrailType): Promise<void> => {
+// 	data.old_values || (data.old_values = "");
+// 	data.new_values || (data.new_values = "");
+// 	data.ip_address || (data.ip_address = "");
+// 	data.user_agent || (data.user_agent = "");
+// 	data.created_at = DateTime.now().toSQL();
 
-	pendingAuditTrails.push(data);
-	if (pendingAuditTrails.length > CONFIG.settings.MAX_LOG_STACK) {
-		commitMemory();
-	}
+// 	pendingAuditTrails.push(data);
+// 	if (pendingAuditTrails.length > CONFIG.settings.MAX_LOG_STACK) {
+// 		commitMemory();
+// 	}
+// };
+
+export const SaveAuditTrail = async (data: AuditTrailType): Promise<void> => {
+    data.ip_address = data.ip_address || "";
+    data.created_at = data.created_at || DateTime.now().toSQL();
+
+    // Remove properties that are no longer part of AuditTrailType
+    const { 
+        user_id, 
+        email, 
+        company_id, 
+        branch_id, 
+        browser_agents, 
+        task, 
+        details, 
+        ip_address, 
+        created_at 
+    } = data;
+
+    const auditTrailData = {
+        user_id,
+        email,
+        company_id,
+        branch_id,
+        browser_agents,
+        task,
+        details,
+        ip_address,
+        created_at
+    };
+
+    pendingAuditTrails.push(auditTrailData);
+    if (pendingAuditTrails.length > CONFIG.settings.MAX_LOG_STACK) {
+        await commitMemory();
+    }
 };

@@ -1,9 +1,10 @@
-import { ThrowError } from "../Helpers/Helpers.js";
+import { SaveAuditTrail, ThrowError } from "../Helpers/Helpers.js";
 import { DBObject } from "../Helpers/MySQL.js";
 import { DateTime } from "luxon";
+
 export default {
-    Query:{
-        async getEmployeeQualifications(_, {company_id, employee_id, offset}) {
+    Query: {
+        async getEmployeeQualifications(_, { company_id, employee_id, offset }, context) {
             const query = `
               SELECT id, company_id, employee_id, type, description, date_obtained, 
                      created_at, updated_at
@@ -14,88 +15,132 @@ export default {
               LIMIT 10 OFFSET :offset
             `;
           
-            const params = {
-              company_id: company_id,
-              employee_id: employee_id,
-              offset: offset
-            };
+            const params = { company_id, employee_id, offset };
           
             try {
-              const results = await DBObject.findDirect(query, params);
-              return results.map(qualification => ({
-                ...qualification,
-                type: qualification.type.toUpperCase(),  
-                date_obtained: qualification.date_obtained.toISOString().split('T')[0], 
-                created_at: qualification.created_at.toISOString(), 
-                updated_at: qualification.updated_at.toISOString()
-              }));
+                const results = await DBObject.findDirect(query, params);
+
+                await SaveAuditTrail({
+                    user_id: context.id,
+                    email: context.email,
+                    branch_id: context.branch_id,
+                    company_id:context.company_id,
+                    task: "GET_EMPLOYEE_QUALIFICATIONS",
+                    details: `Retrieved qualifications for employee ${employee_id}`,
+                    browser_agents: context.userAgent,
+                    ip_address: context.ip
+                  });
+             
+            
+                return results.map(qualification => ({
+                    ...qualification,
+                    type: qualification.type.toUpperCase(),  
+                    date_obtained: qualification.date_obtained.toISOString().split('T')[0], 
+                    created_at: qualification.created_at.toISOString(), 
+                    updated_at: qualification.updated_at.toISOString()
+                }));
             } catch (error) {
-              ThrowError("Failed to fetch employee qualification");
+                console.error("Error fetching employee qualifications:", error);
+                ThrowError("Failed to fetch employee qualifications");
             }
-          }
+        }
     },
-    Mutation:{
-        async createQualification(_,{company_id, employee_id, type, date_obtained, description}){
-            if(!company_id){
-                ThrowError("Invalid company")
+    Mutation: {
+        async createQualification(_, { company_id, employee_id, type, date_obtained, description }, context) {
+            if (!company_id) ThrowError("Invalid company");
+            if (!employee_id) ThrowError("Invalid employee ID");
+
+            const validTypes = ['EXPERIENCE', 'EDUCATION', 'CERTIFICATION', 'OTHERS'];
+            if (!validTypes.includes(type)) {
+                ThrowError('Invalid qualification type');
             }
-            if(!employee_id){
-                ThrowError("Invalid employee ID")
-            }
+
             const qualification = {
                 company_id,
                 employee_id,
                 type,
                 date_obtained,
                 description,
-                created_at:  DateTime.now().toUTC().toISO(),
+                created_at: DateTime.now().toUTC().toISO(),
                 updated_at: DateTime.now().toUTC().toISO()
             };
-
-            const validTypes = ['EXPERIENCE', 'EDUCATION', 'CERTIFICATION', 'OTHERS'];
-            if (!validTypes.includes(type)) {
-              ThrowError('Invalid qualification type');
-            }
             
             try {
                 const insertedId = await DBObject.insertOne("hr_qualifications", qualification);
+
+                await SaveAuditTrail({
+                    user_id: context.id,
+                    email: context.email,
+                    branch_id: context.branch_id,
+                    company_id:context.company_id,
+                    task: "CREATE_QUALIFICATION",
+                    details: `Created ${type} qualification for employee ${employee_id}`,
+                    browser_agents: context.userAgent,
+                    ip_address: context.ip
+                  });
+             
                 return insertedId;
             } catch (error) {
-                ThrowError("Error inserting HR Qualifications")
+                console.error("Error inserting HR Qualifications:", error);
+                ThrowError("Error inserting HR Qualifications");
             }
         },
-
-        async  updateQualification(_,{id, company_id, employee_id, type, date_obtained, description}){
-            if(!company_id){
-                ThrowError("Invalid company ")
-            }
-            if(!employee_id){
-                ThrowError("Invalid employee ID")
-            }
+        async updateQualification(_, { id, company_id, employee_id, type, date_obtained, description }, context) {
+            if (!company_id) ThrowError("Invalid company");
+            if (!employee_id) ThrowError("Invalid employee ID");
             
             const updatedData = {
-                company_id: company_id,
-                employee_id: employee_id,
+                company_id,
+                employee_id,
                 type,
                 date_obtained,
-                description
+                description,
+                updated_at: DateTime.now().toUTC().toISO()
             };
-
             try {
-                const updatedID = await DBObject.updateOne("hr_qualifications", updatedData, {id:id});
+                const updatedID = await DBObject.updateOne("hr_qualifications", updatedData, { id });
+
+
+                await SaveAuditTrail({
+                    user_id: context.id,
+                    email: context.email,
+                    branch_id: context.branch_id,
+                    company_id:context.company_id,
+                    task: "UPDATE_QUALIFICATION",
+                    details: `Updated qualification ${id} for employee ${employee_id}`,
+                    browser_agents: context.userAgent,
+                    ip_address: context.ip
+                  });
+
                 return updatedID;
             } catch (error) {
-                ThrowError("Error updating hr_qualifications")
+                console.error("Error updating hr_qualifications:", error);
+                ThrowError("Error updating hr_qualifications");
             }
         },
-        async deleteQualification(_,{id}){
+        async deleteQualification(_, { id }, context) {
             try {
-                const deletedID = await DBObject.deleteOne("hr_qualifications", {id})
+                const qualificationToDelete = await DBObject.findOne("hr_qualifications", { id });
+                if (!qualificationToDelete) ThrowError("Qualification not found");
+
+                const deletedID = await DBObject.deleteOne("hr_qualifications", { id });
+
+                await SaveAuditTrail({
+                    user_id: context.id,
+                    email: context.email,
+                    branch_id: context.branch_id,
+                    company_id: qualificationToDelete.company_id,
+                    task: "DELETE_QUALIFICATION",
+                    details: `Deleted qualification ${id} for employee ${qualificationToDelete.employee_id}`,
+                    browser_agents: context.userAgent,
+                    ip_address: context.ip
+                  });
+            
                 return deletedID;
             } catch (error) {
-                ThrowError("Error deleting HR qualification")
+                console.error("Error deleting HR qualification:", error);
+                ThrowError("Error deleting HR qualification");
             }
         }
-
     }
 }

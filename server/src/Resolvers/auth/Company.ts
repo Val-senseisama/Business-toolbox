@@ -5,16 +5,16 @@ import { DateTime } from "luxon";
 
 export default {
   Query: {
-    getMyCompanies: async (_, __, context) => {
+    getMyCompanies: async (_, __, context: Record<string, any>) => {
       if (!context || !context.id) {
         ThrowError("#RELOGIN");
       }
       const userCompanies = await DBObject.findMany("user_company", { user_id: context.id });
-      if (!userCompanies) {
-        ThrowError("#USER_COMPANIES_NOT_FOUND");
+      if (!userCompanies || userCompanies.length === 0) {
+        return [];
       }
       const companyIds = userCompanies.map(uc => uc.company_id);
-      
+
       if (!companyIds || companyIds.length === 0) {
         ThrowError("#USER_COMPANY_IDS_NOT_FOUND");
       }
@@ -26,7 +26,7 @@ export default {
 
       return companies;
     },
-    getFullCompanyProfile: async (_, { company_id }, context) => {
+    getFullCompanyProfile: async (_, { company_id }, context: Record<string, any>) => {
       if (!context || !context.id) {
         ThrowError("#RELOGIN");
       }
@@ -34,15 +34,13 @@ export default {
       if (!company) {
         ThrowError("#COMPANY_NOT_FOUND");
       }
-      if (!company.settings) {
-        ThrowError("#COMPANY_SETTINGS_NOT_FOUND");
-      }
+
       return {
         ...company,
         settings: JSON.parse(company.settings)
       };
     },
-    getUsersLinkedToMyCompany: async (_, { company_id, offset }, context) => {
+    getUsersLinkedToMyCompany: async (_, { company_id, offset }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -54,15 +52,15 @@ export default {
         ORDER BY u.id
         LIMIT 10 OFFSET :offset
       `;
-      
+
       const params = {
         company_id: company_id,
         offset: offset
       };
-      
+
       return await DBObject.findDirect(query, params);
     },
-    getAllCompanyBranches: async (_, { company_id, offset }, context) => {
+    getAllCompanyBranches: async (_, { company_id, offset }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -73,15 +71,15 @@ export default {
         ORDER BY id
         LIMIT 10 OFFSET :offset
       `;
-      
+
       const params = {
         company_id: company_id,
         offset: offset
       };
-      
+
       return await DBObject.findDirect(query, params);
     },
-    getAllCompanyUsers: async (_, { company_id, offset }, context) => {
+    getAllCompanyUsers: async (_, { company_id, offset }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -93,15 +91,15 @@ export default {
         ORDER BY u.id
         LIMIT 10 OFFSET :offset
       `;
-      
+
       const params = {
         company_id: company_id,
         offset: offset
       };
-      
+
       return await DBObject.findDirect(query, params);
     },
-    getMyPendingCompanyLinks: async (_, __, context) => {
+    getMyPendingCompanyLinks: async (_, __, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -111,7 +109,7 @@ export default {
     }
   },
   Mutation: {
-    createCompany: async (_, { name, about, address, city, state, country, phone, email, website, industry, logo, settings }, context) => {
+    createCompany: async (_, { name, about, address, city, state, country, phone, email, website, industry, logo, settings }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -120,21 +118,19 @@ export default {
         settings: JSON.stringify(settings),
       };
       const companyId = await DBObject.insertOne("companies", newCompany);
-      
+
       await SaveAuditTrail({
         user_id: context.id,
         company_id: companyId,
         branch_id: 0,
         email: context.email,
-        ip_address: context.ip,
-        browser_agents: context.userAgent,
         task: 'CREATE_COMPANY',
         details: `Created company: ${name}`
       });
-      
+
       return await DBObject.findOne("companies", { id: companyId });
     },
-    updateCompany: async (_, { id, ...updateData }, context) => {
+    updateCompany: async (_, { id, ...updateData }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -143,7 +139,7 @@ export default {
       }
       updateData.updated_at = DateTime.now().toUTC().toISO();
       await DBObject.updateOne("companies", updateData, { id });
-      
+
       await SaveAuditTrail({
         user_id: context.id,
         company_id: id,
@@ -154,15 +150,15 @@ export default {
         task: 'UPDATE_COMPANY',
         details: `Updated company with ID: ${id}`
       });
-      
+
       return await DBObject.findOne("companies", { id });
     },
-    deleteCompany: async (_, { id }, context) => {
+    deleteCompany: async (_, { id }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
       await DBObject.deleteOne("companies", { id });
-      
+
       await SaveAuditTrail({
         user_id: context.id,
         company_id: id,
@@ -173,10 +169,10 @@ export default {
         task: 'DELETE_COMPANY',
         details: `Deleted company with ID: ${id}`
       });
-      
+
       return id;
     },
-    addUserToCompany: async (_, { email, company_id }, context) => {
+    addUserToCompany: async (_, { email, company_id }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -191,21 +187,19 @@ export default {
         role_type: 'STAFF',
         status: 'PENDING'
       });
-      
+
       await SaveAuditTrail({
         user_id: context.id,
         company_id,
         branch_id: 0,
         email: context.email,
-        ip_address: context.ip,
-        browser_agents: context.userAgent,
         task: 'ADD_USER_TO_COMPANY',
         details: `Added user ${email} to company ${company_id}`
       });
-      
+
       return user;
     },
-    removeUserFromCompany: async (_, { user_company_id, email, company_id }, context) => {
+    removeUserFromCompany: async (_, { user_company_id, email, company_id }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -222,7 +216,7 @@ export default {
       });
       return await DBObject.findOne("users", { email });
     },
-    createCompanyBranch: async (_, { company_id, name, settings }, context) => {
+    createCompanyBranch: async (_, { company_id, name, settings }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -238,14 +232,12 @@ export default {
         company_id,
         branch_id: branchId,
         email: context.email,
-        ip_address: context.ip,
-        browser_agents: context.userAgent,
         task: 'CREATE_COMPANY_BRANCH',
         details: `Created branch ${name} for company ${company_id}`
       });
       return await DBObject.findOne("branches", { id: branchId });
     },
-    deleteCompanyBranch: async (_, { company_id, branch_id }, context) => {
+    deleteCompanyBranch: async (_, { company_id, branch_id }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -263,7 +255,7 @@ export default {
       });
       return branch_id;
     },
-    updateCompanyBranch: async (_, { company_id, branch_id, name, settings }, context) => {
+    updateCompanyBranch: async (_, { company_id, branch_id, name, settings }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -286,7 +278,7 @@ export default {
       });
       return await DBObject.findOne("branches", { id: branch_id });
     },
-    acceptPendingCompanyLink: async (_, { user_company_id, company_id }, context) => {
+    acceptPendingCompanyLink: async (_, { user_company_id, company_id }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -304,13 +296,13 @@ export default {
       });
       return await DBObject.findOne("companies", { id: company_id });
     },
-    updateCompanySettings: async (_, { company_id, settings }, context) => {
+    updateCompanySettings: async (_, { company_id, settings }, context: Record<string, any>) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
       const updatedSettings = JSON.stringify(settings);
       await DBObject.updateOne("companies", { settings: updatedSettings }, { id: company_id });
-      
+
       await SaveAuditTrail({
         user_id: context.id,
         company_id,

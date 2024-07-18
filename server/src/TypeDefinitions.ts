@@ -57,7 +57,7 @@ export default `#graphql
     register(email: String, password: String, title: String, firstname: String, lastname: String, phonenumber: String): Int!
     forgotPassword(email: String): Int!
     resetPassword(email: String, token: String, password: String): JWT!
-    updateProfile( title: String, firstname: String,lastname: String, phone: String, gender: String,date_of_Birth: String): User!
+    updateProfile( title: String, firstname: String,lastname: String, phone: String, gender: String,date_of_birth: String): User!
     changePassword(oldPassword: String!, newPassword: String!): Int!
     verifyEmail(token: String, email: String): Int!
     updateFirebaseToken(token: String): Int!

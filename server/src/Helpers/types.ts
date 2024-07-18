@@ -5,14 +5,13 @@ export type ObjectType = {
 export type AuditTrailType = {
 	user_id: number,
 	email: string,
-	company_id:number,
-	branch_id:number,
-	browser_agents:string,
-	task:string,
-	details:any,
-	ip_address?: string,
+	company_id: number,
+	branch_id?: number,
+	browser_agents?: string,
+	task: string,
+	details: any,
+	ip_address?: string | null,
 	created_at?: string,
-
 }
 
 export type ModelType = {

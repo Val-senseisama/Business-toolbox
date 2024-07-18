@@ -23,7 +23,7 @@ function validateRefreshToken(token: string) {
 	}
 }
 
-export default async (req: any, res: any) => {
+export default async (req: any, res: any): Promise<Record<string, any>> => {
 	// Get all the headers from this request
 	const refreshToken = req.headers["x-refresh-token"];
 	const accessToken = req.headers["x-access-token"];
@@ -33,7 +33,7 @@ export default async (req: any, res: any) => {
 		!accessToken &&
 		!refreshToken
 	) {
-		return null;
+		return {};
 	}
 
 	const forceRefresh = req.headers["x-force-refresh"];
@@ -72,5 +72,5 @@ export default async (req: any, res: any) => {
 		return userTokens.user;
 	}
 
-	return null;
+	return {};
 };

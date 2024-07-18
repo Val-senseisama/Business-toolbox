@@ -41,18 +41,6 @@ export default {
                 };
             try {
                 const results = await DBObject.findDirect(query, params);
-                SaveAuditTrail({
-                    user_id: context.id,
-                    email: context.email,
-                    branch_id: context.branch_id,
-                    company_id: context.company_id,
-                    task: "GET_EMPLOYEE_QUALIFICATIONS",
-                    details: `Retrieved qualifications for employee ${employee_id}`,
-                    browser_agents: context.userAgent,
-                    ip_address: context.ip
-                }).catch((error)=>{
-                    ThrowError(error.message);
-                })
                 return results.map(qualification => ({
                     ...qualification,
                     type: qualification.type.toUpperCase(),

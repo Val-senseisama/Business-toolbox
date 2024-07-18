@@ -108,6 +108,7 @@ export default {
         ThrowError(error);
       }
     },
+
     async updateEmployee(_, { id, company_id, branch_id, details }, context: Record<string, any>) {
       if (!context.id) {
         ThrowError("#RELOGIN")
@@ -185,4 +186,4 @@ export default {
       }
     }
   }
-}
+};

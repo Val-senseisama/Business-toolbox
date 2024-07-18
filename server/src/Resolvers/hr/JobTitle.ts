@@ -1,6 +1,6 @@
 import { SaveAuditTrail, ThrowError } from "../../Helpers/Helpers.js";
 import { DBObject } from "../../Helpers/MySQL.js";
-import { DateTime } from "luxon";
+// import { DateTime } from "luxon";
 import { Validate } from "../../Helpers/Validate.js";
 import hasPermission from "../../Helpers/hasPermission.js";
 import _CONFIG from "../../config/config.js";
@@ -47,6 +47,7 @@ export default {
           ThrowError(error.message)
         })
         return results;
+      
       } catch (error) {
         ThrowError("Failed to fetch job titles");
       }
@@ -78,7 +79,7 @@ export default {
       try {
         const insertedId = await DBObject.insertOne('hr_job_titles', data);
         if (!insertedId) {
-          ThrowError('Failed to create JobTitle');
+          ThrowError('Failed to create JobTitle.');
         }
 
        SaveAuditTrail({
@@ -92,7 +93,7 @@ export default {
           ip_address: context.ip
         }).catch((error)=>{
           ThrowError(error)
-        })
+        });
         return insertedId;
       } catch (error) {
         ThrowError("Failed to insert JobTitle.");
@@ -114,7 +115,6 @@ export default {
       if (!hasPermission({ context, company_id, tasks: ["UPDATE_JOB_TITLE"] })) {
         ThrowError("NO ACCESS.")
       }
-
       const updatedData = {
         company_id,
         name,

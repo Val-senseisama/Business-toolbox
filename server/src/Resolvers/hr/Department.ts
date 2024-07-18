@@ -13,9 +13,9 @@ export default {
       if (!Validate.integer(company_id)) {
         ThrowError("Invalid company ID.")
       }
-      if (!hasPermission({ context, company_id, tasks: ["GET_ALL_DEPARTMENTS"] })) {
-        ThrowError("#NO ACCESS.")
-      }
+      // if (!hasPermission({ context, company_id, tasks: ["GET_ALL_DEPARTMENTS"] })) {
+      //   ThrowError("#NO ACCESS.")
+      // }
       const pageSize = _CONFIG.settings.PAGINATION_LIMIT || 30;
       const calculatedOffset = offset * pageSize;
       const query = `
@@ -57,9 +57,9 @@ export default {
       if (!Validate.integer(company_id)) {
         ThrowError("Invalid company.")
       };
-      if (!hasPermission({ context, company_id, tasks: ["CREATE_DEPARTMENT"] })) {
-        ThrowError("NO ACCESS.")
-      };
+      // if (!hasPermission({ context, company_id, tasks: ["CREATE_DEPARTMENT"] })) {
+      //   ThrowError("NO ACCESS.")
+      // };
       if (!Validate.string(name)) {
         ThrowError("Invalid name.")
       };
@@ -122,9 +122,9 @@ export default {
         if (!existingDepartment) {
           ThrowError("Department not found or does not belong to the specified company");
         }
-        if (!hasPermission({ context, company_id, tasks: ["UPDATE_DEPARTMENT"] })) {
-          ThrowError("NO ACCESS.")
-        };
+        // if (!hasPermission({ context, company_id, tasks: ["UPDATE_DEPARTMENT"] })) {
+        //   ThrowError("NO ACCESS.")
+        // };
         const updatedID = await DBObject.updateOne("hr_departments", updatedData, { id });
         SaveAuditTrail({
           user_id: context.id,
@@ -151,9 +151,9 @@ export default {
         if (!departmentToDelete) {
           ThrowError("Department not found.")
         };
-        if (!hasPermission({ context, company_id: departmentToDelete.company_id, tasks: ["DELETE_DEPARTMENT"] })) {
-          ThrowError("NO ACCESS.")
-        }
+        // if (!hasPermission({ context, company_id: departmentToDelete.company_id, tasks: ["DELETE_DEPARTMENT"] })) {
+        //   ThrowError("NO ACCESS.")
+        // }
         const deletedID = await DBObject.deleteOne("hr_departments", { id });
         SaveAuditTrail({
           user_id: context.id,

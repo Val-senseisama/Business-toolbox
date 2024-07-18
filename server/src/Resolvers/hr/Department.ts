@@ -4,7 +4,7 @@ import { DateTime } from "luxon";
 
 export default {
   Query: {
-    async getAllDepartments(_, { company_id, offset }, context) {
+    async getAllDepartments(_, { company_id, offset }, context: Record<string, any>) {
       const query = `
         SELECT id, name, description, created_at, updated_at
         FROM hr_departments
@@ -24,9 +24,7 @@ export default {
           branch_id: context.branch_id,
           company_id,
           task: "GET_ALL_DEPARTMENTS",
-          details: `Retrieved departments for company ${company_id}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
+          details: `Retrieved departments for company ${company_id}`
         });
         return results;
       } catch (error) {
@@ -35,7 +33,7 @@ export default {
     },
   },
   Mutation: {
-    async createDepartment(_, { company_id, name, description }, context) {
+    async createDepartment(_, { company_id, name, description }, context: Record<string, any>) {
       if (!company_id) {
         ThrowError("Invalid company")
       };
@@ -74,7 +72,7 @@ export default {
       }
     },
 
-    async updateDepartment(_, { id, company_id, name, description }, context) {
+    async updateDepartment(_, { id, company_id, name, description }, context: Record<string, any>) {
       if (!id) {
         ThrowError("Invalid department ID")
       };
@@ -102,9 +100,7 @@ export default {
           branch_id: context.branch_id,
           company_id,
           task: "UPDATE_DEPARTMENT",
-          details: `Updated department: ${id}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
+          details: `Updated department: ${id}`
         });
 
         return updatedID;
@@ -113,7 +109,7 @@ export default {
       }
     },
 
-    async deleteDepartment(_, { id }, context) {
+    async deleteDepartment(_, { id }, context: Record<string, any>) {
       if (!id) {
         ThrowError("Invalid ID")
       };

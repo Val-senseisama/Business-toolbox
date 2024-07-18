@@ -1,7 +1,7 @@
 
 
-const hasPermission = ({ context, companyID, tasks }: { context: Record<string, any>, companyID: number, tasks: string[] }) => {
-    if (!companyID) {
+const hasPermission = ({ context, company_id, tasks }: { context: Record<string, any>, company_id: number, tasks: string[] }) => {
+    if (!company_id) {
         return false;
     }
     if (!context || !context.id) {

@@ -40,6 +40,9 @@ async function SendMail(input: MailInput) {
 			.split("[message]")
 			.join(input.message),
 	};
+	if (input.attachment) {
+		obj.attachments = input.attachment;
+	  }
 	await transporter.sendMail(obj);
 	return true;
 }

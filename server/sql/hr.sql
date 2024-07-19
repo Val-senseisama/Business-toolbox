@@ -54,3 +54,18 @@ CREATE TABLE
         FOREIGN KEY (employee_id) REFERENCES accounts (id) ON DELETE RESTRICT,
         FOREIGN KEY (reviewer_id) REFERENCES accounts (id) ON DELETE RESTRICT
     );
+
+CREATE TABLE
+    IF NOT EXISTS hr_attendance (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        company_id INT UNSIGNED NOT NULL,
+        employee_id INT UNSIGNED NOT NULL,
+        attendance_date DATE NOT NULL,
+        check_in VARCHAR(5) NOT NULL,
+        check_out VARCHAR(5) DEFAULT NULL,
+        created_by VARCHAR(100) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
+        FOREIGN KEY (employee_id) REFERENCES accounts (id) ON DELETE RESTRICT
+    );

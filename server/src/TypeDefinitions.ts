@@ -36,6 +36,8 @@ export default `#graphql
     getAllEmployees(company_id: Int, offset: Int): [Account!]
     getEmployeeQualifications(company_id: Int, employee_id: Int, offset: Int): [Qualification!]
     getEmployeePerformanceReviews(company_id: Int, employee_id: Int, offset: Int): [PerformanceReview!]
+    getEmployeeAttendance(company_id: Int, employee_id: Int, attendance_date_start: String, attendance_date_end: String): [Attendance!]
+    getAllEmployeeAttendance(company_id: Int, attendance_date_start: String, attendance_date_end: String): [Attendance!]
 
 
     #### Phase 4m
@@ -135,6 +137,10 @@ export default `#graphql
     updatePerformanceReview(id: Int, company_id: Int, employee_id: Int, reviewer_id: Int, review_date: String, rating: Int, comments: String): PerformanceReview!
     deletePerformanceReview(id: Int): Int #returns deleted performance review id
 
+    checkEmployeeIn(company_id: Int, employee_id: Int): Int
+    checkEmployeeOut(company_id: Int, employee_id: Int): Int
+    updateEmployeeAttendance(company_id: Int, employee_id: Int, attendance_date: String, check_in: String, check_out: String): Int #check_in and check_out should be in HH:MM format
+    updateMultipleEmployeeAttendance(company_id: Int, employee_ids: [Int], attendance_date: String, check_in: String, check_out: String): Int #check_in and check_out should be in HH:MM format
 
 
     #### Phase 4
@@ -499,4 +505,19 @@ enum DepreciationMethod {
   DECLINING-BALANCE
   SUM-OF-YEARS-DIGITS
   UNITS-OF-PRODUCTION
+}
+
+
+type Attendance {
+    id: Int
+    company_id: Int
+    employee_id: Int
+    date: String
+    time_in: String
+    time_out: String
+    created_at: String
+    updated_at: String
+}
+
+
 `;

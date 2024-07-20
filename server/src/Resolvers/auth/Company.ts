@@ -252,11 +252,76 @@ export default {
         ThrowError("Failed fetching pending company's links");
       }
     },
+  },
 
-    Mutation: {
-      async createCompany(
-        _,
-        {
+  Mutation: {
+    async createCompany(
+      _,
+      {
+        name,
+        about,
+        address,
+        city,
+        state,
+        country,
+        phone,
+        email,
+        website,
+        industry,
+        logo,
+        settings,
+      },
+      context: Record<string, any>
+    ) {
+      if (!context.id) {
+        ThrowError("#RELOGIN");
+      }
+
+      if (
+        !hasPermission({ context, company_id: 0, tasks: ["CREATE_COMPANY"] })
+      ) {
+        ThrowError("#NOACCESS");
+      }
+
+      if (!Validate.string(name)) {
+        ThrowError("Invalid company name.");
+      }
+      if (!Validate.string(about)) {
+        ThrowError("Invalid about.");
+      }
+      if (!Validate.string(address)) {
+        ThrowError("Invalid address.");
+      }
+      if (!Validate.string(city)) {
+        ThrowError("Invalid city.");
+      }
+      if (!Validate.string(state)) {
+        ThrowError("Invalid state.");
+      }
+      if (!Validate.string(country)) {
+        ThrowError("Invalid country.");
+      }
+      if (!Validate.phone(phone)) {
+        ThrowError("Invalid phone number.");
+      }
+      if (!Validate.email(email)) {
+        ThrowError("Invalid email.");
+      }
+      if (!Validate.URL(website)) {
+        ThrowError("Invalid website URL.");
+      }
+      if (!Validate.string(industry)) {
+        ThrowError("Invalid industry.");
+      }
+      if (!Validate.URL(logo)) {
+        ThrowError("Invalid logo URL.");
+      }
+      if (!Validate.object(settings)) {
+        ThrowError("Invalid settings.");
+      }
+
+      try {
+        const newCompany = {
           name,
           about,
           address,
@@ -268,699 +333,634 @@ export default {
           website,
           industry,
           logo,
-          settings,
-        },
-        context: Record<string, any>
-      ) {
-        if (!context.id) {
-          ThrowError("#RELOGIN");
-        }
+          settings: JSON.stringify(settings),
+        };
+        const companyId = await DBObject.insertOne("companies", newCompany);
 
-        if (
-          !hasPermission({ context, company_id: 0, tasks: ["CREATE_COMPANY"] })
-        ) {
-          ThrowError("#NOACCESS");
-        }
-
-        if (!Validate.string(name)) {
-          ThrowError("Invalid company name.");
-        }
-        if (!Validate.string(about)) {
-          ThrowError("Invalid about.");
-        }
-        if (!Validate.string(address)) {
-          ThrowError("Invalid address.");
-        }
-        if (!Validate.string(city)) {
-          ThrowError("Invalid city.");
-        }
-        if (!Validate.string(state)) {
-          ThrowError("Invalid state.");
-        }
-        if (!Validate.string(country)) {
-          ThrowError("Invalid country.");
-        }
-        if (!Validate.phone(phone)) {
-          ThrowError("Invalid phone number.");
-        }
-        if (!Validate.email(email)) {
-          ThrowError("Invalid email.");
-        }
-        if (!Validate.URL(website)) {
-          ThrowError("Invalid website URL.");
-        }
-        if (!Validate.string(industry)) {
-          ThrowError("Invalid industry.");
-        }
-        if (!Validate.URL(logo)) {
-          ThrowError("Invalid logo URL.");
-        }
-        if (!Validate.object(settings)) {
-          ThrowError("Invalid settings.");
-        }
-
-        try {
-          const newCompany = {
-            name,
-            about,
-            address,
-            city,
-            state,
-            country,
-            phone,
-            email,
-            website,
-            industry,
-            logo,
-            settings: JSON.stringify(settings),
-          };
-          const companyId = await DBObject.insertOne("companies", newCompany);
-
-          if (!companyId) {
-            ThrowError("Failed to create company.");
-          }
-
-          SaveAuditTrail({
-            user_id: context.id,
-            company_id: companyId,
-            branch_id: 0,
-            email: context.email,
-            task: "CREATE_COMPANY",
-            details: `Created company: ${name}`,
-          });
-
-          return {
-            ...newCompany,
-            id: companyId,
-            settings: JSON.parse(newCompany.settings),
-          };
-        } catch (error) {
+        if (!companyId) {
           ThrowError("Failed to create company.");
         }
+
+        SaveAuditTrail({
+          user_id: context.id,
+          company_id: companyId,
+          branch_id: 0,
+          email: context.email,
+          task: "CREATE_COMPANY",
+          details: `Created company: ${name}`,
+        });
+
+        return {
+          ...newCompany,
+          id: companyId,
+          settings: JSON.parse(newCompany.settings),
+        };
+      } catch (error) {
+        ThrowError("Failed to create company.");
+      }
+    },
+
+    async updateCompany(
+      _,
+      {
+        id,
+        name,
+        about,
+        address,
+        city,
+        state,
+        country,
+        phone,
+        email,
+        website,
+        industry,
+        logo,
+        settings,
       },
+      context: Record<string, any>
+    ) {
+      if (!context.id) {
+        ThrowError("#RELOGIN");
+      }
 
-      async updateCompany(
-        _,
-        {
-          id,
-          name,
-          about,
-          address,
-          city,
-          state,
-          country,
-          phone,
-          email,
-          website,
-          industry,
-          logo,
-          settings,
-        },
-        context: Record<string, any>
+      if (
+        !hasPermission({ context, company_id: id, tasks: ["UPDATE_COMPANY"] })
       ) {
-        if (!context.id) {
-          ThrowError("#RELOGIN");
-        }
+        ThrowError("#NOACCESS");
+      }
 
-        if (
-          !hasPermission({ context, company_id: id, tasks: ["UPDATE_COMPANY"] })
-        ) {
-          ThrowError("#NOACCESS");
-        }
+      if (!Validate.string(name)) {
+        ThrowError("Invalid company name.");
+      }
+      if (!Validate.string(about)) {
+        ThrowError("Invalid about.");
+      }
+      if (!Validate.string(address)) {
+        ThrowError("Invalid address.");
+      }
+      if (!Validate.string(city)) {
+        ThrowError("Invalid city.");
+      }
+      if (!Validate.string(state)) {
+        ThrowError("Invalid state.");
+      }
+      if (!Validate.string(country)) {
+        ThrowError("Invalid country.");
+      }
+      if (!Validate.phone(phone)) {
+        ThrowError("Invalid phone number.");
+      }
+      if (!Validate.email(email)) {
+        ThrowError("Invalid email.");
+      }
+      if (!Validate.URL(website)) {
+        ThrowError("Invalid website URL.");
+      }
+      if (!Validate.string(industry)) {
+        ThrowError("Invalid industry.");
+      }
+      if (!Validate.URL(logo)) {
+        ThrowError("Invalid logo URL.");
+      }
+      if (!Validate.object(settings)) {
+        ThrowError("Invalid settings.");
+      }
 
-        if (!Validate.string(name)) {
-          ThrowError("Invalid company name.");
-        }
-        if (!Validate.string(about)) {
-          ThrowError("Invalid about.");
-        }
-        if (!Validate.string(address)) {
-          ThrowError("Invalid address.");
-        }
-        if (!Validate.string(city)) {
-          ThrowError("Invalid city.");
-        }
-        if (!Validate.string(state)) {
-          ThrowError("Invalid state.");
-        }
-        if (!Validate.string(country)) {
-          ThrowError("Invalid country.");
-        }
-        if (!Validate.phone(phone)) {
-          ThrowError("Invalid phone number.");
-        }
-        if (!Validate.email(email)) {
-          ThrowError("Invalid email.");
-        }
-        if (!Validate.URL(website)) {
-          ThrowError("Invalid website URL.");
-        }
-        if (!Validate.string(industry)) {
-          ThrowError("Invalid industry.");
-        }
-        if (!Validate.URL(logo)) {
-          ThrowError("Invalid logo URL.");
-        }
-        if (!Validate.object(settings)) {
-          ThrowError("Invalid settings.");
-        }
+      try {
+        const updateData: any = { updated_at: DateTime.now().toSQL() };
+        if (name) updateData.name = name;
+        if (about) updateData.about = about;
+        if (address) updateData.address = address;
+        if (city) updateData.city = city;
+        if (state) updateData.state = state;
+        if (country) updateData.country = country;
+        if (phone) updateData.phone = phone;
+        if (email) updateData.email = email;
+        if (website) updateData.website = website;
+        if (industry) updateData.industry = industry;
+        if (logo) updateData.logo = logo;
+        if (settings) updateData.settings = JSON.stringify(settings);
 
+        let updated = 0;
         try {
-          const updateData: any = { updated_at: DateTime.now().toSQL() };
-          if (name) updateData.name = name;
-          if (about) updateData.about = about;
-          if (address) updateData.address = address;
-          if (city) updateData.city = city;
-          if (state) updateData.state = state;
-          if (country) updateData.country = country;
-          if (phone) updateData.phone = phone;
-          if (email) updateData.email = email;
-          if (website) updateData.website = website;
-          if (industry) updateData.industry = industry;
-          if (logo) updateData.logo = logo;
-          if (settings) updateData.settings = JSON.stringify(settings);
-
-          let updated = 0;
-          try {
-            updated = await DBObject.updateOne("companies", updateData, { id });
-          } catch (error) {
-            ThrowError("Failed to update company.");
-          }
-
-          if (updated < 1) {
-            ThrowError("No changes made to company.");
-          }
-
-          SaveAuditTrail({
-            user_id: context.id,
-            company_id: id,
-            branch_id: 0,
-            email: context.email,
-            ip_address: context.ip,
-            browser_agents: context.userAgent,
-            task: "UPDATE_COMPANY",
-            details: `Updated company with ID: ${id}`,
-          });
-
-          return updated;
+          updated = await DBObject.updateOne("companies", updateData, { id });
         } catch (error) {
           ThrowError("Failed to update company.");
         }
-      },
 
-      async deleteCompany(_, { id }, context: Record<string, any>) {
-        if (!context.id) {
-          ThrowError("#RELOGIN");
+        if (updated < 1) {
+          ThrowError("No changes made to company.");
         }
 
-        if (
-          !hasPermission({ context, company_id: id, tasks: ["DELETE_COMPANY"] })
-        ) {
-          ThrowError("#NOACCESS");
-        }
+        SaveAuditTrail({
+          user_id: context.id,
+          company_id: id,
+          branch_id: 0,
+          email: context.email,
+          ip_address: context.ip,
+          browser_agents: context.userAgent,
+          task: "UPDATE_COMPANY",
+          details: `Updated company with ID: ${id}`,
+        });
 
+        return updated;
+      } catch (error) {
+        ThrowError("Failed to update company.");
+      }
+    },
+
+    async deleteCompany(_, { id }, context: Record<string, any>) {
+      if (!context.id) {
+        ThrowError("#RELOGIN");
+      }
+
+      if (
+        !hasPermission({ context, company_id: id, tasks: ["DELETE_COMPANY"] })
+      ) {
+        ThrowError("#NOACCESS");
+      }
+
+      try {
+        let deleted = 0;
         try {
-          let deleted = 0;
-          try {
-            deleted = await DBObject.deleteOne("companies", { id });
-          } catch (error) {
-            ThrowError("Failed to delete company.");
-          }
-
-          if (deleted < 1) {
-            ThrowError("Company not found or already deleted.");
-          }
-
-          SaveAuditTrail({
-            user_id: context.id,
-            company_id: id,
-            branch_id: 0,
-            email: context.email,
-            ip_address: context.ip,
-            browser_agents: context.userAgent,
-            task: "DELETE_COMPANY",
-            details: `Deleted company with ID: ${id}`,
-          });
-
-          return id;
+          deleted = await DBObject.deleteOne("companies", { id });
         } catch (error) {
           ThrowError("Failed to delete company.");
         }
-      },
 
-      async addUserToCompany(
-        _,
-        { email, company_id },
-        context: Record<string, any>
+        if (deleted < 1) {
+          ThrowError("Company not found or already deleted.");
+        }
+
+        SaveAuditTrail({
+          user_id: context.id,
+          company_id: id,
+          branch_id: 0,
+          email: context.email,
+          ip_address: context.ip,
+          browser_agents: context.userAgent,
+          task: "DELETE_COMPANY",
+          details: `Deleted company with ID: ${id}`,
+        });
+
+        return id;
+      } catch (error) {
+        ThrowError("Failed to delete company.");
+      }
+    },
+
+    async addUserToCompany(
+      _,
+      { email, company_id },
+      context: Record<string, any>
+    ) {
+      if (!context.id) {
+        ThrowError("#RELOGIN");
+      }
+
+      if (
+        !hasPermission({
+          context,
+          company_id,
+          tasks: ["ADD_USER_TO_COMPANY"],
+        })
       ) {
-        if (!context.id) {
-          ThrowError("#RELOGIN");
+        ThrowError("#NOACCESS");
+      }
+
+      if (!Validate.email(email)) {
+        ThrowError("Invalid email.");
+      }
+
+      try {
+        const user = await DBObject.findOne("users", { email });
+        if (!user) {
+          ThrowError("User not found.");
         }
 
-        if (
-          !hasPermission({
-            context,
-            company_id,
-            tasks: ["ADD_USER_TO_COMPANY"],
-          })
-        ) {
-          ThrowError("#NOACCESS");
-        }
-
-        if (!Validate.email(email)) {
-          ThrowError("Invalid email.");
-        }
-
+        let inserted = 0;
         try {
-          const user = await DBObject.findOne("users", { email });
-          if (!user) {
-            ThrowError("User not found.");
-          }
-
-          let inserted = 0;
-          try {
-            inserted = await DBObject.insertOne("user_company", {
-              user_id: user.id,
-              company_id,
-              email,
-              role_type: "STAFF",
-              status: "PENDING",
-            });
-          } catch (error) {
-            ThrowError("Failed to add user to company.");
-          }
-
-          if (inserted < 1) {
-            ThrowError("Failed to add user to company.");
-          }
-
-          await SaveAuditTrail({
-            user_id: context.id,
+          inserted = await DBObject.insertOne("user_company", {
+            user_id: user.id,
             company_id,
-            branch_id: 0,
-            email: context.email,
-            task: "ADD_USER_TO_COMPANY",
-            details: `Added user ${email} to company ${company_id}`,
+            email,
+            role_type: "STAFF",
+            status: "PENDING",
           });
-
-          return {
-            id: user.id,
-            email: user.email,
-            firstname: user.firstname,
-            lastname: user.lastname,
-            title: user.title,
-            phone: user.phone,
-          };
         } catch (error) {
           ThrowError("Failed to add user to company.");
         }
-      },
 
-      async removeUserFromCompany(
-        _,
-        { user_company_id, email, company_id },
-        context: Record<string, any>
+        if (inserted < 1) {
+          ThrowError("Failed to add user to company.");
+        }
+
+        await SaveAuditTrail({
+          user_id: context.id,
+          company_id,
+          branch_id: 0,
+          email: context.email,
+          task: "ADD_USER_TO_COMPANY",
+          details: `Added user ${email} to company ${company_id}`,
+        });
+
+        return {
+          id: user.id,
+          email: user.email,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          title: user.title,
+          phone: user.phone,
+        };
+      } catch (error) {
+        ThrowError("Failed to add user to company.");
+      }
+    },
+
+    async removeUserFromCompany(
+      _,
+      { user_company_id, email, company_id },
+      context: Record<string, any>
+    ) {
+      if (!context.id) {
+        ThrowError("#RELOGIN");
+      }
+
+      if (
+        !hasPermission({
+          context,
+          company_id,
+          tasks: ["REMOVE_USER_FROM_COMPANY"],
+        })
       ) {
-        if (!context.id) {
-          ThrowError("#RELOGIN");
-        }
+        ThrowError("#NOACCESS");
+      }
 
-        if (
-          !hasPermission({
-            context,
-            company_id,
-            tasks: ["REMOVE_USER_FROM_COMPANY"],
-          })
-        ) {
-          ThrowError("#NOACCESS");
-        }
+      if (!Validate.integer(user_company_id)) {
+        ThrowError("Invalid user company ID");
+      }
 
-        if (!Validate.integer(user_company_id)) {
-          ThrowError("Invalid user company ID");
-        }
+      if (!Validate.email(email)) {
+        ThrowError("Invalid email");
+      }
 
-        if (!Validate.email(email)) {
-          ThrowError("Invalid email");
-        }
+      if (!Validate.integer(company_id)) {
+        ThrowError("Invalid company ID");
+      }
 
-        if (!Validate.integer(company_id)) {
-          ThrowError("Invalid company ID");
-        }
-
+      try {
+        let deleted = 0;
         try {
-          let deleted = 0;
-          try {
-            deleted = await DBObject.deleteOne("user_company", {
-              id: user_company_id,
-            });
-          } catch (error) {
-            ThrowError("Failed to remove user from company");
-          }
-
-          if (deleted < 1) {
-            ThrowError("User company record not found or already removed");
-          }
-
-          SaveAuditTrail({
-            user_id: context.id,
-            company_id,
-            branch_id: 0,
-            email: context.email,
-            ip_address: context.ip,
-            browser_agents: context.userAgent,
-            task: "REMOVE_USER_FROM_COMPANY",
-            details: `Removed user ${email} from company ${company_id}`,
+          deleted = await DBObject.deleteOne("user_company", {
+            id: user_company_id,
           });
-
-          return deleted;
         } catch (error) {
           ThrowError("Failed to remove user from company");
         }
-      },
 
-      async createCompanyBranch(
-        _,
-        { company_id, name, settings },
-        context: Record<string, any>
+        if (deleted < 1) {
+          ThrowError("User company record not found or already removed");
+        }
+
+        SaveAuditTrail({
+          user_id: context.id,
+          company_id,
+          branch_id: 0,
+          email: context.email,
+          ip_address: context.ip,
+          browser_agents: context.userAgent,
+          task: "REMOVE_USER_FROM_COMPANY",
+          details: `Removed user ${email} from company ${company_id}`,
+        });
+
+        return deleted;
+      } catch (error) {
+        ThrowError("Failed to remove user from company");
+      }
+    },
+
+    async createCompanyBranch(
+      _,
+      { company_id, name, settings },
+      context: Record<string, any>
+    ) {
+      if (!context.id) {
+        ThrowError("#RELOGIN");
+      }
+
+      if (
+        !hasPermission({
+          context,
+          company_id,
+          tasks: ["CREATE_COMPANY_BRANCH"],
+        })
       ) {
-        if (!context.id) {
-          ThrowError("#RELOGIN");
-        }
+        ThrowError("#NOACCESS");
+      }
 
-        if (
-          !hasPermission({
-            context,
-            company_id,
-            tasks: ["CREATE_COMPANY_BRANCH"],
-          })
-        ) {
-          ThrowError("#NOACCESS");
-        }
+      if (!Validate.integer(company_id)) {
+        ThrowError("Invalid company ID");
+      }
 
-        if (!Validate.integer(company_id)) {
-          ThrowError("Invalid company ID");
-        }
+      if (!Validate.string(name)) {
+        ThrowError("Invalid branch name");
+      }
 
-        if (!Validate.string(name)) {
-          ThrowError("Invalid branch name");
-        }
+      if (!Validate.object(settings)) {
+        ThrowError("Invalid settings");
+      }
 
-        if (!Validate.object(settings)) {
-          ThrowError("Invalid settings");
-        }
+      try {
+        const newBranch = {
+          company_id,
+          name,
+          settings: JSON.stringify(settings),
+        };
 
+        let branchId = 0;
         try {
-          const newBranch = {
-            company_id,
-            name,
-            settings: JSON.stringify(settings),
-          };
-
-          let branchId = 0;
-          try {
-            branchId = await DBObject.insertOne("branches", newBranch);
-          } catch (error) {
-            ThrowError("Failed to create company branch");
-          }
-
-          if (branchId < 1) {
-            ThrowError("Failed to create company branch");
-          }
-
-          SaveAuditTrail({
-            user_id: context.id,
-            company_id,
-            branch_id: branchId,
-            email: context.email,
-            task: "CREATE_COMPANY_BRANCH",
-            details: `Created branch ${name} for company ${company_id}`,
-          });
-
-          return {
-            id: branchId,
-            name: newBranch.name,
-            settings: JSON.parse(newBranch.settings),
-          };
+          branchId = await DBObject.insertOne("branches", newBranch);
         } catch (error) {
           ThrowError("Failed to create company branch");
         }
-      },
 
-      async deleteCompanyBranch(
-        _,
-        { company_id, branch_id },
-        context: Record<string, any>
+        if (branchId < 1) {
+          ThrowError("Failed to create company branch");
+        }
+
+        SaveAuditTrail({
+          user_id: context.id,
+          company_id,
+          branch_id: branchId,
+          email: context.email,
+          task: "CREATE_COMPANY_BRANCH",
+          details: `Created branch ${name} for company ${company_id}`,
+        });
+
+        return {
+          id: branchId,
+          name: newBranch.name,
+          settings: JSON.parse(newBranch.settings),
+        };
+      } catch (error) {
+        ThrowError("Failed to create company branch");
+      }
+    },
+
+    async deleteCompanyBranch(
+      _,
+      { company_id, branch_id },
+      context: Record<string, any>
+    ) {
+      if (!context.id) {
+        ThrowError("#RELOGIN");
+      }
+
+      if (
+        !hasPermission({
+          context,
+          company_id,
+          tasks: ["UPDATE_COMPANY_BRANCH"],
+        })
       ) {
-        if (!context.id) {
-          ThrowError("#RELOGIN");
-        }
+        ThrowError("#NOACCESS");
+      }
 
-        if (
-          !hasPermission({
-            context,
-            company_id,
-            tasks: ["UPDATE_COMPANY_BRANCH"],
-          })
-        ) {
-          ThrowError("#NOACCESS");
-        }
+      if (!Validate.integer(company_id)) {
+        ThrowError("Invalid company ID");
+      }
 
-        if (!Validate.integer(company_id)) {
-          ThrowError("Invalid company ID");
-        }
+      if (!Validate.integer(branch_id)) {
+        ThrowError("Invalid branch ID");
+      }
 
-        if (!Validate.integer(branch_id)) {
-          ThrowError("Invalid branch ID");
-        }
-
+      try {
+        let deleted = 0;
         try {
-          let deleted = 0;
-          try {
-            deleted = await DBObject.deleteOne("branches", {
-              id: branch_id,
-              company_id,
-            });
-          } catch (error) {
-            ThrowError("Failed to delete company branch");
-          }
-
-          if (deleted < 1) {
-            ThrowError("Branch not found or already deleted");
-          }
-
-          SaveAuditTrail({
-            user_id: context.id,
+          deleted = await DBObject.deleteOne("branches", {
+            id: branch_id,
             company_id,
-            branch_id,
-            email: context.email,
-            ip_address: context.ip,
-            browser_agents: context.userAgent,
-            task: "DELETE_COMPANY_BRANCH",
-            details: `Deleted branch ${branch_id} from company ${company_id}`,
           });
-
-          return branch_id;
         } catch (error) {
           ThrowError("Failed to delete company branch");
         }
-      },
 
-      async updateCompanyBranch(
-        _,
-        { company_id, branch_id, name, settings },
-        context: Record<string, any>
+        if (deleted < 1) {
+          ThrowError("Branch not found or already deleted");
+        }
+
+        SaveAuditTrail({
+          user_id: context.id,
+          company_id,
+          branch_id,
+          email: context.email,
+          ip_address: context.ip,
+          browser_agents: context.userAgent,
+          task: "DELETE_COMPANY_BRANCH",
+          details: `Deleted branch ${branch_id} from company ${company_id}`,
+        });
+
+        return branch_id;
+      } catch (error) {
+        ThrowError("Failed to delete company branch");
+      }
+    },
+
+    async updateCompanyBranch(
+      _,
+      { company_id, branch_id, name, settings },
+      context: Record<string, any>
+    ) {
+      if (!context.id) {
+        ThrowError("#RELOGIN");
+      }
+
+      if (
+        !hasPermission({
+          context,
+          company_id,
+          tasks: ["UPDATE_COMPANY_BRANCH"],
+        })
       ) {
-        if (!context.id) {
-          ThrowError("#RELOGIN");
-        }
+        ThrowError("#NOACCESS");
+      }
 
-        if (
-          !hasPermission({
-            context,
-            company_id,
-            tasks: ["UPDATE_COMPANY_BRANCH"],
-          })
-        ) {
-          ThrowError("#NOACCESS");
-        }
+      if (!Validate.integer(company_id)) {
+        ThrowError("Invalid company ID");
+      }
 
-        if (!Validate.integer(company_id)) {
-          ThrowError("Invalid company ID");
-        }
+      if (!Validate.integer(branch_id)) {
+        ThrowError("Invalid branch ID");
+      }
 
-        if (!Validate.integer(branch_id)) {
-          ThrowError("Invalid branch ID");
-        }
+      if (name && !Validate.string(name)) {
+        ThrowError("Invalid branch name");
+      }
 
-        if (name && !Validate.string(name)) {
-          ThrowError("Invalid branch name");
-        }
+      if (settings && !Validate.object(settings)) {
+        ThrowError("Invalid settings");
+      }
 
-        if (settings && !Validate.object(settings)) {
-          ThrowError("Invalid settings");
-        }
+      try {
+        const updateData: any = {};
+        if (name) updateData.name = name;
+        if (settings) updateData.settings = JSON.stringify(settings);
 
+        let updated = 0;
         try {
-          const updateData: any = {};
-          if (name) updateData.name = name;
-          if (settings) updateData.settings = JSON.stringify(settings);
-
-          let updated = 0;
-          try {
-            updated = await DBObject.updateOne("branches", updateData, {
-              id: branch_id,
-              company_id,
-            });
-          } catch (error) {
-            ThrowError("Failed to update company branch");
-          }
-
-          if (updated < 1) {
-            ThrowError("No changes made to company branch");
-          }
-
-          SaveAuditTrail({
-            user_id: context.id,
+          updated = await DBObject.updateOne("branches", updateData, {
+            id: branch_id,
             company_id,
-            branch_id,
-            email: context.email,
-            ip_address: context.ip,
-            browser_agents: context.userAgent,
-            task: "UPDATE_COMPANY_BRANCH",
-            details: `Updated branch ${branch_id} for company ${company_id}`,
           });
-
-          return updated;
         } catch (error) {
           ThrowError("Failed to update company branch");
         }
-      },
 
-      async acceptPendingCompanyLink(
-        _,
-        { user_company_id, company_id },
-        context: Record<string, any>
-      ) {
-        if (!context.id) {
-          ThrowError("#RELOGIN");
+        if (updated < 1) {
+          ThrowError("No changes made to company branch");
         }
 
-        if (!Validate.integer(user_company_id)) {
-          ThrowError("Invalid user company ID");
-        }
+        SaveAuditTrail({
+          user_id: context.id,
+          company_id,
+          branch_id,
+          email: context.email,
+          ip_address: context.ip,
+          browser_agents: context.userAgent,
+          task: "UPDATE_COMPANY_BRANCH",
+          details: `Updated branch ${branch_id} for company ${company_id}`,
+        });
 
+        return updated;
+      } catch (error) {
+        ThrowError("Failed to update company branch");
+      }
+    },
+
+    async acceptPendingCompanyLink(
+      _,
+      { user_company_id, company_id },
+      context: Record<string, any>
+    ) {
+      if (!context.id) {
+        ThrowError("#RELOGIN");
+      }
+
+      if (!Validate.integer(user_company_id)) {
+        ThrowError("Invalid user company ID");
+      }
+
+      try {
+        let updated = 0;
         try {
-          let updated = 0;
-          try {
-            updated = await DBObject.updateOne(
-              "user_company",
-              { status: "ACTIVE" },
-              { id: user_company_id, company_id, user_id: context.id }
-            );
-          } catch (error) {
-            ThrowError("Failed to accept pending company link");
-          }
-
-          if (updated < 1) {
-            ThrowError("No pending company link found or already accepted");
-          }
-
-          SaveAuditTrail({
-            user_id: context.id,
-            company_id,
-            branch_id: 0,
-            email: context.email,
-            ip_address: context.ip,
-            browser_agents: context.userAgent,
-            task: "ACCEPT_COMPANY_LINK",
-            details: `Accepted pending link for company ${company_id}`,
-          });
-
-          const companyData = await DBObject.findOne("companies", {
-            id: company_id,
-          });
-          if (!companyData) {
-            ThrowError("Company not found");
-          }
-
-          return {
-            id: companyData.id,
-            name: companyData.name,
-            about: companyData.about,
-            logo: companyData.logo,
-            address: companyData.address,
-            email: companyData.email,
-            website: companyData.website,
-            city: companyData.city,
-            state: companyData.state,
-            country: companyData.country,
-            phone: companyData.phone,
-          };
+          updated = await DBObject.updateOne(
+            "user_company",
+            { status: "ACTIVE" },
+            { id: user_company_id, company_id, user_id: context.id }
+          );
         } catch (error) {
-          ThrowError("Failed to accept pending company's link.");
-        }
-      },
-
-      updateCompanySettings: async (
-        _,
-        { company_id, settings },
-        context: Record<string, any>
-      ) => {
-        if (!context.id) {
-          ThrowError("#RELOGIN");
+          ThrowError("Failed to accept pending company link");
         }
 
-        if (
-          !hasPermission({
-            context,
-            company_id,
-            tasks: ["UPDATE_COMPANY_SETTINGS"],
-          })
-        ) {
-          ThrowError("#NOACCESS");
+        if (updated < 1) {
+          ThrowError("No pending company link found or already accepted");
         }
 
-        if (!Validate.integer(company_id)) {
-          ThrowError("Invalid company ID");
+        SaveAuditTrail({
+          user_id: context.id,
+          company_id,
+          branch_id: 0,
+          email: context.email,
+          ip_address: context.ip,
+          browser_agents: context.userAgent,
+          task: "ACCEPT_COMPANY_LINK",
+          details: `Accepted pending link for company ${company_id}`,
+        });
+
+        const companyData = await DBObject.findOne("companies", {
+          id: company_id,
+        });
+        if (!companyData) {
+          ThrowError("Company not found");
         }
 
-        if (!Validate.object(settings)) {
-          ThrowError("Invalid settings");
-        }
+        return {
+          id: companyData.id,
+          name: companyData.name,
+          about: companyData.about,
+          logo: companyData.logo,
+          address: companyData.address,
+          email: companyData.email,
+          website: companyData.website,
+          city: companyData.city,
+          state: companyData.state,
+          country: companyData.country,
+          phone: companyData.phone,
+        };
+      } catch (error) {
+        ThrowError("Failed to accept pending company's link.");
+      }
+    },
 
+    updateCompanySettings: async (
+      _,
+      { company_id, settings },
+      context: Record<string, any>
+    ) => {
+      if (!context.id) {
+        ThrowError("#RELOGIN");
+      }
+
+      if (
+        !hasPermission({
+          context,
+          company_id,
+          tasks: ["UPDATE_COMPANY_SETTINGS"],
+        })
+      ) {
+        ThrowError("#NOACCESS");
+      }
+
+      if (!Validate.integer(company_id)) {
+        ThrowError("Invalid company ID");
+      }
+
+      if (!Validate.object(settings)) {
+        ThrowError("Invalid settings");
+      }
+
+      try {
+        const updatedSettings = JSON.stringify(settings);
+        let updated = 0;
         try {
-          const updatedSettings = JSON.stringify(settings);
-          let updated = 0;
-          try {
-            updated = await DBObject.updateOne(
-              "companies",
-              { settings: updatedSettings },
-              { id: company_id }
-            );
-          } catch (error) {
-            ThrowError("Failed to update company settings");
-          }
-
-          if (updated < 1) {
-            ThrowError("No changes made to company settings");
-          }
-
-          SaveAuditTrail({
-            user_id: context.id,
-            company_id,
-            branch_id: 0,
-            email: context.email,
-            ip_address: context.ip,
-            browser_agents: context.userAgent,
-            task: "UPDATE_COMPANY_SETTINGS",
-            details: `Updated settings for company ${company_id}`,
-          });
-
-          return settings;
+          updated = await DBObject.updateOne(
+            "companies",
+            { settings: updatedSettings },
+            { id: company_id }
+          );
         } catch (error) {
           ThrowError("Failed to update company settings");
         }
-      },
+
+        if (updated < 1) {
+          ThrowError("No changes made to company settings");
+        }
+
+        SaveAuditTrail({
+          user_id: context.id,
+          company_id,
+          branch_id: 0,
+          email: context.email,
+          ip_address: context.ip,
+          browser_agents: context.userAgent,
+          task: "UPDATE_COMPANY_SETTINGS",
+          details: `Updated settings for company ${company_id}`,
+        });
+
+        return settings;
+      } catch (error) {
+        ThrowError("Failed to update company settings");
+      }
     },
   },
 };

@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && node dist/index.js",
-    "build": "tsc",
+    "build": "rm -rf dist && tsc && cp -r src/Templates dist/Templates",
+    "start": "npm run build && node dist/index.js",
     "serve": "node dist/index.js"
   },
   "keywords": [],

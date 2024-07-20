@@ -340,7 +340,7 @@ export default {
       const isAllowed = hasPermission({ context, company_id, tasks: ['createPayroll'] });
       if (!isAllowed) { ThrowError('#NOACCESS'); }
 
-      if (!Validate.integer(company_id)) { ThrowError('Invalid company.'); }
+      if (!Validate.positiveInteger(company_id)) { ThrowError('Invalid company.'); }
       if (!Validate.integer(branch_id)) { ThrowError('Invalid branch.'); }
       if (!Validate.string(name)) { ThrowError('Invalid name.'); }
       if (!Validate.array(schedule)) { ThrowError('Invalid schedule.'); }
@@ -360,8 +360,8 @@ export default {
       const isAllowed = hasPermission({ context, company_id, tasks: ['updatePayroll'] });
       if (!isAllowed) { ThrowError('#NOACCESS'); }
 
-      if (!Validate.integer(id)) { ThrowError('Invalid payroll ID.'); }
-      if (!Validate.integer(company_id)) { ThrowError('Invalid company.'); }
+      if (!Validate.positiveInteger(id)) { ThrowError('Invalid payroll ID.'); }
+      if (!Validate.positiveInteger(company_id)) { ThrowError('Invalid company.'); }
       if (!Validate.integer(branch_id)) { ThrowError('Invalid branch.'); }
       if (!Validate.string(name)) { ThrowError('Invalid name.'); }
       if (!Validate.array(schedule)) { ThrowError('Invalid schedule.'); }
@@ -381,7 +381,8 @@ export default {
       const isAllowed = hasPermission({ context, company_id, tasks: ['deletePayroll'] });
       if (!isAllowed) { ThrowError('#NOACCESS'); }
 
-      if (!Validate.integer(id)) { ThrowError('Invalid payroll ID.'); }
+      if (!Validate.positiveInteger(company_id)) { ThrowError('Invalid company.'); }
+      if (!Validate.positiveInteger(id)) { ThrowError('Invalid payroll ID.'); }
 
       try {
         await DBObject.deleteOne('payrolls', { id });
@@ -397,9 +398,9 @@ export default {
       const isAllowed = hasPermission({ context, company_id, tasks: ['postPayrollLiability'] });
       if (!isAllowed) { ThrowError('#NOACCESS'); }
 
-      if (!Validate.integer(company_id)) { ThrowError('Invalid company.'); }
+      if (!Validate.positiveInteger(company_id)) { ThrowError('Invalid company.'); }
       if (!Validate.integer(branch_id)) { ThrowError('Invalid branch.'); }
-      if (!Validate.integer(payroll_id)) { ThrowError('Invalid payroll ID.'); }
+      if (!Validate.positiveInteger(payroll_id)) { ThrowError('Invalid payroll ID.'); }
       if (!Validate.string(header_name)) { ThrowError('Invalid header name.'); }
 
       try {
@@ -416,11 +417,11 @@ export default {
       const isAllowed = hasPermission({ context, company_id, tasks: ['postPayrollExpense'] });
       if (!isAllowed) { ThrowError('#NOACCESS'); }
 
-      if (!Validate.integer(company_id)) { ThrowError('Invalid company.'); }
+      if (!Validate.positiveInteger(company_id)) { ThrowError('Invalid company.'); }
       if (!Validate.integer(branch_id)) { ThrowError('Invalid branch.'); }
-      if (!Validate.integer(payroll_id)) { ThrowError('Invalid payroll ID.'); }
+      if (!Validate.positiveInteger(payroll_id)) { ThrowError('Invalid payroll ID.'); }
       if (!Validate.string(header_name)) { ThrowError('Invalid header name.'); }
-      if (!Validate.integer(bank_id)) { ThrowError('Invalid bank ID.'); }
+      if (!Validate.positiveInteger(bank_id)) { ThrowError('Invalid bank ID.'); }
 
       try {
         const insertId = await DBObject.insertOne('payroll_expenses', { company_id, branch_id, payroll_id, header_name, bank_id });

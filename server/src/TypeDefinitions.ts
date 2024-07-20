@@ -100,14 +100,14 @@ export default `#graphql
 
     createAccountingYear(company_id: Int, name: String, start_date: String, end_date: String): AccountingYear!
     updateAccountingYear(id: Int, company_id: Int, name: String, start_date: String, end_date: String): AccountingYear! #cant update a closed accounting year and cant update start_date for an active accounting year
-    closeAccountingYear(id: Int, company_id: Int, new_accounting_year_id: id): Int
+    closeAccountingYear(id: Int, company_id: Int, new_accounting_year_id: Int): Int
     deleteAccountingYear(company_id: Int, id: Int): Int #returns deleted accounting year id, cant only delete a pending accounting year
     
     postTransaction( company_id: Int, branch_id: Int, source: [TransactionComponent!], destination: [TransactionComponent!], value_date: String, remarks: String): [Transaction!]
     deleteTransaction(company_id: Int, branch_id: Int, id: Int): String #returns deleted transaction code
 
-    createPayroll(company_id: Int, branch_id: Int, name: String, schedule: [SalarySchedule] ): Payroll!
-    updatePayroll(id: Int, company_id: Int, branch_id: Int, name: String, schedule: [SalarySchedule] ): Payroll!
+    createPayroll(company_id: Int, branch_id: Int, name: String, schedule: [SalaryScheduleInput] ): Payroll!
+    updatePayroll(id: Int, company_id: Int, branch_id: Int, name: String, schedule: [SalaryScheduleInput] ): Payroll!
     deletePayroll(company_id: Int, id: Int): Int #returns deleted payroll id
 
     postPayrollLiability(company_id: Int, branch_id: Int, payroll_id: Int, header_name: String): Int
@@ -241,19 +241,19 @@ type Account {
     updated_at: String
 }
 
-type LedgerDetails {
+input LedgerDetails {
     name: String
     description: String
 }
 
-type CustomerDetails {
+input CustomerDetails {
     name: String
     phone: String
     email: String
     description: String
 }
 
-type VendorDetails {
+input VendorDetails {
     name: String
     description: String
     address: String
@@ -268,7 +268,7 @@ type VendorDetails {
     bank_account_number: String
 }
 
-type EmployeeDetails {
+input EmployeeDetails {
     employee_id: String
     job_title_id: Int
     department_id: Int
@@ -356,7 +356,7 @@ type Transaction {
     created_at: String
 }
 
-type TransactionComponent {
+input TransactionComponent {
     account_id: Int
     amount: Float
 }
@@ -408,6 +408,20 @@ type PerformanceReview {
 }
 
 type SalarySchedule {
+    employee_id: Int
+    employee_name: String
+    employee_bank_details: String
+    gross_pay: Float
+    loan_repayment: Float
+    penalties: Float
+    union_dues: Float
+    health: Float
+    retirements: Float
+    other_deductions: Float
+    income_tax: Float
+    net_pay: Float
+}
+input SalaryScheduleInput {
     employee_id: Int
     employee_name: String
     employee_bank_details: String
@@ -501,10 +515,10 @@ type AssetDepreciation {
 }
 
 enum DepreciationMethod {
-  STRAIGHT-LINE
-  DECLINING-BALANCE
-  SUM-OF-YEARS-DIGITS
-  UNITS-OF-PRODUCTION
+  STRAIGHT_LINE
+  DECLINING_BALANCE
+  SUM_OF_YEARS_DIGITS
+  UNITS_OF_PRODUCTION
 }
 
 

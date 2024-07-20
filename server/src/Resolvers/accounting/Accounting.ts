@@ -55,7 +55,8 @@ export default {
         ThrowError('Failed to fetch transactions.');
       }
     },
-
+  },
+  Mutation: {
     async createLedger(_, { company_id, branch_id, details }, context) {
       const isAllowed = hasPermission({ context, company_id, tasks: ['createLedger'] });
       if (!isAllowed) { ThrowError('#NOACCESS'); }

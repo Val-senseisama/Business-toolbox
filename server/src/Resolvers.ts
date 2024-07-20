@@ -6,6 +6,8 @@ import Performance from "./Resolvers/hr/Performance.js"
 import Company from "./Resolvers/auth/Company.js"
 import Roles from "./Resolvers/auth/Roles.js"
 import User from "./Resolvers/auth/User.js"
+import Accounting from "./Resolvers/accounting/Accounting.js"
+import Fixed_asset from "./Resolvers/fixed_asset/Fixed_asset.js"
 
 
 
@@ -20,7 +22,8 @@ export default {
     ...Company.Query,
     ...User.Query,
     ...Roles.Query,
-
+    ...Accounting.Query,
+    ...Fixed_asset.Query,
 
   },
   Mutation: {
@@ -31,7 +34,9 @@ export default {
     ...Performance.Mutation,
     ...Company.Mutation,
     ...User.Mutation,
-    ...Roles.Mutation
+    ...Roles.Mutation,
+    ...Accounting.Mutation,
+    ...Fixed_asset.Mutation
 
   }
 }

@@ -150,7 +150,7 @@ export default `#graphql
     deleteAssetCategory(id: Int): Int #returns deleted asset category id
 
     createAssetItem(company_id: Int, branch_id: Int, vendor_id: Int, location_id: Int, category_id: Int, tag: String, serial_number: String, name: String, description: String, purchase_date: String, purchase_cost: Float, latest_value: Float, status: AssetStatus): FixedAsset!
-    updateAssetCategory(id: Int, company_id: Int, branch_id: Int, vendor_id: Int, location_id: Int, category_id: Int, tag: String, serial_number: String, name: String, description: String, purchase_date: String, purchase_cost: Float, latest_value: Float, status: AssetStatus): FixedAsset!
+    updateAssetItem(id: Int, company_id: Int, branch_id: Int, vendor_id: Int, location_id: Int, category_id: Int, tag: String, serial_number: String, name: String, description: String, purchase_date: String, purchase_cost: Float, latest_value: Float, status: AssetStatus): FixedAsset!
     deleteAssetItem(company_id: Int, id: Int): Int #returns deleted asset item id
     
 

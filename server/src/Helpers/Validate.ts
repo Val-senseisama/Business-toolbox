@@ -4,6 +4,7 @@ export const Validate = {
     phone: (phone: string): boolean => /^[0-9]+$/.test(phone),
     integer: (value: any): boolean => Number.isInteger(value),
     positiveInteger: (value: any): boolean => Number.isInteger(value) && value >= 0,
+    float: (value: any): boolean => Number.isFinite(value),
     string: (value: any): boolean => typeof value === 'string' && value.trim() !== '',
     array: (value: any): boolean => Array.isArray(value) && value.length > 0,
     object: (value: any): boolean => typeof value === 'object' && value !== null && Object.keys(value).length > 0,

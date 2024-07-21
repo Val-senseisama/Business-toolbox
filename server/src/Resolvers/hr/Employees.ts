@@ -23,7 +23,7 @@ export default {
       const pageSize = CONFIG.settings.PAGINATION_LIMIT || 30;
       const calculatedOffset = offset * pageSize;
       const query = `SELECT * FROM accounts
-              WHERE company_id = :company_id AND type = 'EMPLOYEE' LIMIT:limit OFFSET :offset`;
+              WHERE company_id = :company_id AND type = 'EMPLOYEE' LIMIT :limit OFFSET :offset`;
       const params = {
         company_id,
         limit: pageSize,

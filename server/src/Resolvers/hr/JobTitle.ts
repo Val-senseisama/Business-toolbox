@@ -1,4 +1,4 @@
-import { SaveAuditTrail, ThrowError } from "../../Helpers/Helpers.js";
+import { log, SaveAuditTrail, ThrowError } from "../../Helpers/Helpers.js";
 import { DBObject } from "../../Helpers/MySQL.js";
 // import { DateTime } from "luxon";
 import { Validate } from "../../Helpers/Validate.js";
@@ -12,21 +12,18 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN")
       };
-      if (!Validate.integer(company_id)) {
-        ThrowError("Invalid company.")
-      };
-      if (!hasPermission({ context, company_id, tasks: ["GET_ALL_JOB_TITLES"] })) {
+
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
         ThrowError("NO ACCESS.")
       }
+
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.")
+      };
       const pageSize = _CONFIG.settings.PAGINATION_LIMIT || 30;
       const calculatedOffset = offset * pageSize;
-      const query = `
-              SELECT id, name, description, created_at, updated_at
-              FROM hr_job_titles
-              WHERE company_id = :company_id
-              ORDER BY id
-              LIMIT:limit OFFSET :offset
-            `;
+      const query = `SELECT * FROM hr_job_titles
+              WHERE company_id = :company_id LIMIT :limit OFFSET :offset`;
       const params = {
         company_id,
         limit: pageSize,
@@ -34,21 +31,9 @@ export default {
       };
       try {
         const results = await DBObject.findDirect(query, params);
-        SaveAuditTrail({
-          user_id: context.id,
-          name: context.name,
-          branch_id: context.branch_id,
-          company_id,
-          task: "GET_ALL_JOB_TITLES",
-          details: `Retrieved job titles for company ${company_id}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
-        }).catch((error) => {
-          ThrowError(error.message)
-        })
         return results;
-
       } catch (error) {
+        log("getAllJobTitles", error);
         ThrowError("Failed to fetch job titles");
       }
     }
@@ -58,18 +43,17 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN")
       }
-      if (!Validate.integer(company_id)) {
+
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+        ThrowError("NO ACCESS.")
+      }
+      if (!Validate.positiveInteger(company_id)) {
         ThrowError("Invalid company. Please enter a valid company number.");
       }
+
       if (!Validate.string(name)) {
         ThrowError("Invalid name.");
       };
-      if (!Validate.string(description)) {
-        ThrowError("Invalid description.");
-      };
-      if (!hasPermission({ context, company_id, tasks: ["CREATE_JOB_TITLE"] })) {
-        ThrowError("NO ACCESS.")
-      }
 
       const data = {
         company_id,
@@ -85,88 +69,90 @@ export default {
         SaveAuditTrail({
           user_id: context.id,
           name: context.name,
-          branch_id: context.branch_id,
           company_id,
           task: "CREATE_JOB_TITLE",
-          details: `Created job title: ${name}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
-        }).catch((error) => {
-          ThrowError(error)
-        });
-        return insertedId;
+          details: `Created job title: ${name}`
+        })
+
+        return await DBObject.findOne('hr_job_titles', { id: insertedId });
       } catch (error) {
+        log("createJobTitle", error);
         ThrowError("Failed to insert JobTitle.");
       }
     },
+
     async updateJobTitle(_, { id, company_id, name, description }, context: Record<string, any>) {
       if (!context.id) {
         ThrowError("#RELOGIN")
       }
-      if (!Validate.integer(company_id)) {
+
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+        ThrowError("NO ACCESS.")
+      }
+
+      if (!Validate.positiveInteger(id)) {
+        ThrowError("Invalid job title.");
+      }
+      if (!Validate.positiveInteger(company_id)) {
         ThrowError("Invalid company.");
       }
+
       if (!Validate.string(name)) {
         ThrowError("Invalid name.");
       };
-      if (!Validate.string(description)) {
-        ThrowError("Invalid description.");
-      };
-      if (!hasPermission({ context, company_id, tasks: ["UPDATE_JOB_TITLE"] })) {
-        ThrowError("NO ACCESS.")
-      }
       const updatedData = {
-        company_id,
         name,
         description
       };
       try {
-        const updatedID = await DBObject.updateOne("hr_job_titles", updatedData, { id });
+        const updatedID = await DBObject.updateOne("hr_job_titles", updatedData, { id, company_id });
+        if (!updatedID) {
+          ThrowError("Failed to update job title.")
+        }
         SaveAuditTrail({
           user_id: context.id,
           name: context.name,
-          branch_id: context.branch_id,
           company_id,
           task: "UPDATE_JOB_TITLE",
-          details: `Updated job title: ${id}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
-        }).catch((error) => {
-          ThrowError(error);
+          details: `Updated job title id: ${id}, name: ${name}, description: ${description}`,
         })
-        return updatedID;
+        return await DBObject.findOne("hr_job_titles", { id, company_id });
       } catch (error) {
+        log("updateJobTitle", error);
         ThrowError("Error updating job titles");
       }
     },
 
-    async deleteJobTitle(_, { id }, context: Record<string, any>) {
-      if (!Validate.integer(id)) {
-        ThrowError("Invalid ID.")
-      };
+    async deleteJobTitle(_, { id, company_id }, context: Record<string, any>) {
+      if (!context.id) {
+        ThrowError("#RELOGIN")
+      }
+
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+        ThrowError("NO ACCESS.")
+      }
+
+      if (!Validate.positiveInteger(id)) {
+        ThrowError("Invalid job title.");
+      }
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.");
+      }
       try {
-        const jobTitleToDelete = await DBObject.findOne("hr_job_titles", { id });
-        if (!jobTitleToDelete) {
-          ThrowError("Job title not found")
-        };
-        if (!hasPermission({ context, company_id: jobTitleToDelete.company_id, tasks: ["DELETE_JOB_TITLE"] })) {
-          ThrowError("NO ACCESS.")
+        const deletedID = await DBObject.deleteOne("hr_job_titles", { id, company_id });
+        if (!deletedID) {
+          ThrowError("Failed to delete job title.")
         }
-        const deletedID = await DBObject.deleteOne("hr_job_titles", { id });
         SaveAuditTrail({
           user_id: context.id,
           name: context.name,
-          branch_id: context.branch_id,
-          company_id: jobTitleToDelete.company_id,
+          company_id: company_id,
           task: "DELETE_JOB_TITLE",
-          details: `Deleted job title: ${id}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
-        }).catch((error) => {
-          ThrowError(error)
-        });
-        return deletedID;
+          details: `Deleted job title: ${id}`
+        })
+        return id;
       } catch (error) {
+        log("deleteJobTitle", error);
         ThrowError("Error deleting job title");
       }
     }

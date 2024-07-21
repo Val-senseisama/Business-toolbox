@@ -10,11 +10,13 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN")
       };
-      if (!Validate.integer(company_id)) {
-        ThrowError("Invalid company ID.")
-      }
-      if (!hasPermission({ context, company_id, tasks: ["GET_ALL_DEPARTMENTS"] })) {
+
+      if (!hasPermission({ context, company_id, tasks: ["hr"] })) {
         ThrowError("#NO ACCESS.")
+      }
+
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company ID.")
       }
       const pageSize = _CONFIG.settings.PAGINATION_LIMIT || 30;
       const calculatedOffset = offset * pageSize;

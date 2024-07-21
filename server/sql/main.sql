@@ -34,6 +34,7 @@ CREATE TABLE
     IF NOT EXISTS branches (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
+        description VARCHAR(255) NOT NULL,
         settings JSON DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -64,6 +65,7 @@ CREATE TABLE
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         user_id INT UNSIGNED NOT NULL,
         company_id INT UNSIGNED NOT NULL,
+        branch_id INT UNSIGNED NOT NULL,
         role_id INT UNSIGNED DEFAULT 0,
         email VARCHAR(100) NOT NULL,
         role_type ENUM ('OWNER', 'STAFF', 'CUSTOMER'),
@@ -72,6 +74,7 @@ CREATE TABLE
         status ENUM ('ACTIVE', 'PENDING', 'REJECTED') DEFAULT 'PENDING',
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT,
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
+        FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE CASCADE,
         FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE RESTRICT
     );
 
@@ -81,14 +84,14 @@ CREATE TABLE
         user_id INT UNSIGNED NOT NULL,
         company_id INT UNSIGNED NOT NULL,
         branch_id INT UNSIGNED NOT NULL,
-        email VARCHAR(100) NOT NULL,
+        name VARCHAR(100) NOT NULL,
         ip_address VARCHAR(45) DEFAULT NULL,
         browser_agents TEXT DEFAULT NULL,
         task VARCHAR(100) NOT NULL,
         details TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT,
-        FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE RESTRICT,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE CASCADE,
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 

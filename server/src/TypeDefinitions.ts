@@ -69,18 +69,18 @@ export default `#graphql
     createCompany(name: String, about: String, address: String, city: String, state: String, country: String, phone: String, email: String, website: String, industry: String, logo: String, settings: JSON): Company!
     updateCompany(id: Int, name: String, about: String, address: String, city: String, state: String, country: String, phone: String, email: String, website: String, industry: String, logo: String, settings: JSON): Company!
     deleteCompany(id: Int): Int !#returns deleted company id
-    addUserToCompany(email: String, company_id: Int): UserBasic!
+    addUserToCompany(email: String, company_id: Int, branch_id: Int): UserBasic!
     removeUserFromCompany(user_company_id: Int, email: String, company_id: Int): UserBasic!
-    createCompanyBranch(company_id: Int, name: String, settings: JSON): Branch!
+    createCompanyBranch(company_id: Int, name: String, description: String, settings: JSON): Branch!
     deleteCompanyBranch(company_id: Int, branch_id: Int): Int #returns deleted branch id
-    updateCompanyBranch(company_id: Int, branch_id: Int, name: String, settings: JSON): Branch!
+    updateCompanyBranch(company_id: Int, branch_id: Int, description: String, name: String, settings: JSON): Branch!
     acceptPendingCompanyLink(user_company_id: Int, company_id: Int): CompanyBasic!
     updateCompanySettings(company_id: Int, settings: JSON): JSON
 
     # Company Roles Management
     createRole(company_id: Int, name: String, json: JSON): Role!
-    updateRole(id: Int, name: String, json: JSON, status: String): Role!
-    deleteRole(id: Int): Int #returns deleted role id
+    updateRole(id: Int, company_id: Int, name: String, json: JSON, status: String): Role!
+    deleteRole(id: Int, company_id: Int): Int #returns deleted role id
 
 
 
@@ -119,23 +119,23 @@ export default `#graphql
     # HR
     createDepartment(company_id: Int, name: String, description: String): Department!
     updateDepartment(id: Int, company_id: Int, name: String, description: String): Department!
-    deleteDepartment(id: Int): Int #returns deleted department id
+    deleteDepartment(id: Int, company_id: Int): Int #returns deleted department id
 
     createJobTitle(company_id: Int, name: String, description: String): JobTitle!
     updateJobTitle(id: Int, company_id: Int, name: String, description: String): JobTitle!
-    deleteJobTitle(id: Int): Int #returns deleted job title id
+    deleteJobTitle(id: Int, company_id: Int): Int #returns deleted job title id
 
     createEmployee(company_id: Int, branch_id: Int, details: EmployeeDetails): Account!
     updateEmployee(id: Int, company_id: Int, branch_id: Int, details: EmployeeDetails): Account!
-    deleteEmployee(id: Int): Int #returns deleted employee id
+    deleteEmployee(id: Int, company_id: Int): Int #returns deleted employee id
 
     createQualification(company_id: Int, employee_id: Int, type: QualificationTypes, date_obtained: String, description: String): Qualification!
     updateQualification(id: Int, company_id: Int, employee_id: Int, type: QualificationTypes, date_obtained: String, description: String): Qualification!
-    deleteQualification(id: Int): Int #returns deleted qualification id
+    deleteQualification(id: Int, company_id: Int): Int #returns deleted qualification id
 
     createPerformanceReview(company_id: Int, employee_id: Int, reviewer_id: Int, review_date: String, rating: Int, comments: String): PerformanceReview!
     updatePerformanceReview(id: Int, company_id: Int, employee_id: Int, reviewer_id: Int, review_date: String, rating: Int, comments: String): PerformanceReview!
-    deletePerformanceReview(id: Int): Int #returns deleted performance review id
+    deletePerformanceReview(id: Int, company_id: Int): Int #returns deleted performance review id
 
     checkEmployeeIn(company_id: Int, employee_id: Int): Int
     checkEmployeeOut(company_id: Int, employee_id: Int): Int
@@ -196,6 +196,7 @@ type Company {
     website: String
     industry: String
     logo: String
+    accounting_year_id: Int
     settings: JSON
     plan: String
     plan_expiry: String
@@ -212,6 +213,7 @@ type CompanyBasic {
     country: String
     phone: String
     email: String
+    accounting_year_id: Int
     website: String
     logo: String
 }

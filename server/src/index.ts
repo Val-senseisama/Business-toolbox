@@ -53,6 +53,7 @@ app.use(
 // read all files in sql folder
 const sqlFiles = fs.readdirSync(CONFIG.BASE + "../sql");
 for (const file of sqlFiles) {
+  if (!file.endsWith(".sql")) continue;
   const sql: string = fs.readFileSync(CONFIG.BASE + "../sql/" + file, "utf8").trim();
   const sqlArray: string[] = sql.split(';')
   for (const statement of sqlArray) {
@@ -60,7 +61,6 @@ for (const file of sqlFiles) {
     await DBObject.executeDirect(statement).then(() => console.log("Table created")).catch((err) => console.log(err.message));
   }
 }
-
 
 await new Promise((resolve) =>
   httpServer.listen({ port }, () => resolve("Server started"))

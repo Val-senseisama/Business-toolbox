@@ -1,0 +1,13 @@
+{
+    "accounting_year": [
+        "company_id",
+        "status"
+    ],
+    "user_company": [
+        "company_id",
+        "user_id"
+    ],
+    "users": [
+        "email"
+    ]
+}

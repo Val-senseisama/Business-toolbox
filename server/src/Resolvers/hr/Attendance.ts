@@ -10,22 +10,25 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
-      if (!Validate.integer(company_id) || !Validate.integer(employee_id)) {
-        ThrowError("Invalid company or employee ID.");
-      }
-      const isAllowed = hasPermission({ context, company_id, tasks: ['getEmployeeAttendance'] });
-      if (!isAllowed) {
+
+      if (!hasPermission({ context, company_id, tasks: ['manage_hr', 'manage_attendance'] })) {
         ThrowError('#NOACCESS');
       }
+      if (!Validate.positiveInteger(company_id) || !Validate.positiveInteger(employee_id)) {
+        ThrowError("Invalid company or employee.");
+      }
+      if (!Validate.date(attendance_date_start) || !Validate.date(attendance_date_start)) {
+        ThrowError("Invalid start or end date.");
+      }
+      // check if start date is greater than end date
+      if (new Date(attendance_date_start) > new Date(attendance_date_end)) {
+        ThrowError("Start date cannot be greater than end date.");
+      }
 
+      const query = `SELECT * FROM hr_attendance WHERE company_id = :company_id
+          AND employee_id = :employee_id AND attendance_date BETWEEN :start AND :end`;
+      const params = { company_id, employee_id, start: attendance_date_start, end: attendance_date_end };
       try {
-        const query = `
-          SELECT * FROM hr_attendance
-          WHERE company_id = :company_id
-          AND employee_id = :employee_id
-          AND attendance_date BETWEEN :start AND :end
-        `;
-        const params = { company_id, employee_id, start: attendance_date_start, end: attendance_date_end };
         const results = await DBObject.findDirect(query, params);
         return results;
       } catch (error) {
@@ -37,21 +40,25 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
-      if (!Validate.integer(company_id)) {
-        ThrowError("Invalid company ID.");
-      }
-      const isAllowed = hasPermission({ context, company_id, tasks: ['getAllEmployeeAttendance'] });
-      if (!isAllowed) {
+
+      if (!hasPermission({ context, company_id, tasks: ['manage_hr', 'manage_attendance'] })) {
         ThrowError('#NOACCESS');
       }
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.");
+      }
 
+      if (!Validate.date(attendance_date_start) || !Validate.date(attendance_date_start)) {
+        ThrowError("Invalid start or end date.");
+      }
+      // check if start date is greater than end date
+      if (new Date(attendance_date_start) > new Date(attendance_date_end)) {
+        ThrowError("Start date cannot be greater than end date.");
+      }
+      const query = `SELECT * FROM hr_attendance WHERE company_id = :company_id
+          AND attendance_date BETWEEN :start AND :end`;
+      const params = { company_id, start: attendance_date_start, end: attendance_date_end };
       try {
-        const query = `
-          SELECT * FROM hr_attendance
-          WHERE company_id = :company_id
-          AND attendance_date BETWEEN :start AND :end
-        `;
-        const params = { company_id, start: attendance_date_start, end: attendance_date_end };
         const results = await DBObject.findDirect(query, params);
         return results;
       } catch (error) {
@@ -65,25 +72,26 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
-      if (!Validate.integer(company_id) || !Validate.integer(employee_id)) {
-        ThrowError("Invalid company or employee ID.");
-      }
-      const isAllowed = hasPermission({ context, company_id, tasks: ['checkEmployeeIn'] });
-      if (!isAllowed) {
+
+      if (!hasPermission({ context, company_id, tasks: ['manage_hr', 'manage_attendance'] })) {
         ThrowError('#NOACCESS');
       }
 
+      if (!Validate.positiveInteger(company_id) || !Validate.positiveInteger(employee_id)) {
+        ThrowError("Invalid company or employee.");
+      }
+
       const checkInTime = new Date().toISOString().split('T')[1].slice(0, 5);
-      const data = { company_id, employee_id, attendance_date: new Date().toISOString().split('T')[0], check_in: checkInTime, created_by: context.email };
+      const data = { company_id, employee_id, attendance_date: new Date().toISOString().split('T')[0], check_in: checkInTime, created_by: context.name };
 
       try {
         const attendanceId = await DBObject.insertOne('hr_attendance', data);
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           company_id,
           task: "CHECK_IN",
-          details: `Checked in employee ${employee_id} on ${data.attendance_date}`,
+          details: `${context.name} checked in employee ${employee_id} on ${data.attendance_date} by ${checkInTime}`,
         });
         return attendanceId;
       } catch (error) {
@@ -95,26 +103,27 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
-      if (!Validate.integer(company_id) || !Validate.integer(employee_id)) {
-        ThrowError("Invalid company or employee ID.");
-      }
-      const isAllowed = hasPermission({ context, company_id, tasks: ['checkEmployeeOut'] });
-      if (!isAllowed) {
+
+      if (!hasPermission({ context, company_id, tasks: ['manage_hr', 'manage_attendance'] })) {
         ThrowError('#NOACCESS');
+      }
+
+      if (!Validate.positiveInteger(company_id) || !Validate.positiveInteger(employee_id)) {
+        ThrowError("Invalid company or employee.");
       }
 
       const checkOutTime = new Date().toISOString().split('T')[1].slice(0, 5);
       try {
         const updatedCount = await DBObject.updateOne('hr_attendance', { check_out: checkOutTime }, { company_id, employee_id, attendance_date: new Date().toISOString().split('T')[0] });
         if (updatedCount === 0) {
-          ThrowError("Error: Attendance record not found or already checked out.");
+          ThrowError("Attendance record not found or already checked out.");
         }
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           company_id,
           task: "CHECK_OUT",
-          details: `Checked out employee ${employee_id} at ${checkOutTime}`,
+          details: `${context.name} checked out employee ${employee_id} at ${checkOutTime}`,
         });
         return updatedCount;
       } catch (error) {
@@ -126,15 +135,21 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
-      if (!Validate.integer(company_id) || !Validate.integer(employee_id)) {
-        ThrowError("Invalid company or employee ID.");
+
+      if (!hasPermission({ context, company_id, tasks: ['manage_hr', 'manage_attendance'] })) {
+        ThrowError('#NOACCESS');
       }
+
+      if (!Validate.positiveInteger(company_id) || !Validate.positiveInteger(employee_id)) {
+        ThrowError("Invalid company or employee.");
+      }
+
       if (!Validate.time(check_in) || !Validate.time(check_out)) {
         ThrowError("Invalid check-in or check-out time.");
       }
-      const isAllowed = hasPermission({ context, company_id, tasks: ['updateEmployeeAttendance'] });
-      if (!isAllowed) {
-        ThrowError('#NOACCESS');
+
+      if (!Validate.date(attendance_date)) {
+        ThrowError("Invalid attendance date.");
       }
 
       const data = { check_in, check_out };
@@ -142,10 +157,10 @@ export default {
         const updatedCount = await DBObject.updateOne('hr_attendance', data, { company_id, employee_id, attendance_date });
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           company_id,
           task: "UPDATE_ATTENDANCE",
-          details: `Updated attendance for employee ${employee_id} on ${attendance_date}`,
+          details: `Updated attendance for employee ${employee_id} on ${attendance_date} to ${check_in} - ${check_out}`,
         });
         return updatedCount;
       } catch (error) {
@@ -157,32 +172,50 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
-      if (!Validate.integer(company_id)) {
-        ThrowError("Invalid company ID.");
-      }
-      if (!Validate.array(employee_ids)) {
-        ThrowError("Invalid employee IDs.");
-      }
-      const isAllowed = hasPermission({ context, company_id, tasks: ['updateMultipleEmployeeAttendance'] });
-      if (!isAllowed) {
+
+
+      if (!hasPermission({ context, company_id, tasks: ['manage_hr', 'manage_attendance'] })) {
         ThrowError('#NOACCESS');
       }
 
-      const updates = employee_ids.map(employee_id => ({ company_id, employee_id, attendance_date, check_in, check_out }));
-      try {
-        // Use updateDirect here
-        const updateCount = await DBObject.updateMany('hr_attendance', updates, { company_id, attendance_date, check_in, check_out });
-        SaveAuditTrail({
-          user_id: context.id,
-          email: context.email,
-          company_id,
-          task: "UPDATE_MULTIPLE_ATTENDANCES",
-          details: `Updated attendance for multiple employees on ${attendance_date}`,
-        });
-        return updateCount;
-      } catch (error) {
-        ThrowError("Error updating multiple attendance records.");
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.");
       }
+      if (!Validate.array(employee_ids)) {
+        ThrowError("Invalid employees.");
+      }
+
+      if (!Validate.time(check_in) || !Validate.time(check_out)) {
+        ThrowError("Invalid check-in or check-out time.");
+      }
+
+      if (!Validate.date(attendance_date)) {
+        ThrowError("Invalid attendance date.");
+      }
+
+      const data = { check_in, check_out };
+
+      await DBObject.transaction();
+      for (const employee_id of employee_ids) {
+        const condition = { company_id, employee_id, attendance_date };
+        try {
+          const updated = await DBObject.updateOne('hr_attendance', data, condition);
+        } catch (error) {
+          await DBObject.rollback();
+          ThrowError("Error updating attendance.");
+        }
+      };
+
+      await DBObject.commit();
+      SaveAuditTrail({
+        user_id: context.id,
+        name: context.name,
+        company_id,
+        task: "UPDATE_MULTIPLE_ATTENDANCES",
+        details: `Updated attendance for multiple employees (${employee_ids.join(',')}) on ${attendance_date} to ${check_in} - ${check_out}`,
+      });
+      return employee_ids.length;
+
     }
   }
 };

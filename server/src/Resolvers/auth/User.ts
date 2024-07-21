@@ -1,6 +1,6 @@
 
 
-import { ThrowError, SaveAuditTrail, MakeID } from "../../Helpers/Helpers.js";
+import { ThrowError, SaveAuditTrail, MakeID, log } from "../../Helpers/Helpers.js";
 import { DBObject } from "../../Helpers/MySQL.js";
 import { Validate } from "../../Helpers/Validate.js";
 import setJWT from "../../Helpers/setJWT.js";
@@ -9,14 +9,14 @@ import bcrypt from "bcrypt";
 import CONFIG from "../../config/config.js";
 import { uuid } from "../../Helpers/Helpers.js";
 import SendMail from "../../Helpers/SendMail.js";
-import MailInput  from "../../Helpers/SendMail.js";
+import MailInput from "../../Helpers/SendMail.js";
 
 type MailInput = {
     recipients: string;
     subject: string;
     message: string;
     attachment?: any[];
-  };
+};
 
 
 const SALT_ROUNDS = 10;
@@ -46,13 +46,11 @@ export default {
 
                 SaveAuditTrail({
                     user_id: user.id,
-                    email: user.email,
+                    name: `${user.title} ${user.firstname} ${user.lastname}`,
                     company_id: 0,
                     branch_id: 0,
                     task: 'LOGIN',
-                    details: `User ${user.firstname} ${user.lastname} logged in`,
-                    ip_address: context.ip,
-                    browser_agents: context.userAgent,
+                    details: `${user.firstname} ${user.lastname} logged in`
                 });
 
                 return jwt;
@@ -69,10 +67,13 @@ export default {
                 if (!Validate.string(password)) {
                     ThrowError("Invalid password.");
                 }
-                if (!firstname) {
+                if (!Validate.string(title)) {
+                    ThrowError("Invalid title.");
+                }
+                if (!Validate.string(firstname)) {
                     ThrowError("Invalid firstname.");
                 }
-                if (!lastname) {
+                if (!Validate.string(lastname)) {
                     ThrowError("Invalid lastname.");
                 }
                 if (!Validate.phone(phonenumber)) {
@@ -99,15 +100,18 @@ export default {
 
                 const userId = await DBObject.insertOne('users', newUser);
 
+                if (!Validate.positiveInteger(userId)) {
+                    ThrowError("Unable to create user.");
+                }
+
                 const verificationToken = uuid();
-                const expiry = DateTime.now().plus({ minutes: 10 }).toSQLDate();
 
                 await DBObject.insertOne('tokens', {
                     email,
                     token: verificationToken,
                     user_id: userId,
                     status: 'PENDING',
-                    expires_at: expiry,
+                    expires_at: DateTime.now().plus({ minutes: CONFIG.settings.PASSWORD_RESET_TOKEN_VALIDITY_MINUTES }).toSQL(),
                 });
 
                 try {
@@ -118,21 +122,19 @@ export default {
                           <h1>Hello ${firstname}</h1>
                           <p>Use this code to register: ${verificationToken}</p>
                         </div>`,
-                      };
-                      await SendMail(emailInput);
+                    };
+                    await SendMail(emailInput);
                 } catch (error) {
-                    ThrowError(error);
+                    log("Register", error);
                 }
 
                 SaveAuditTrail({
                     user_id: userId,
-                    email,
+                    name: `${title} ${firstname} ${lastname}`,
                     company_id: 0,
                     branch_id: 0,
                     task: 'REGISTER',
-                    details: `New user registered (${firstname} ${lastname})`,
-                    ip_address: context.ip,
-                    browser_agents: context.userAgent,
+                    details: `New user registered (${title} ${firstname} ${lastname})`
                 });
 
                 return userId;
@@ -149,7 +151,7 @@ export default {
 
                 const user = await DBObject.findOne('users', { email });
                 if (!user) {
-                    ThrowError('User not found');
+                    ThrowError('Email address is not registered.');
                 }
 
                 const token = MakeID(6);
@@ -165,8 +167,8 @@ export default {
                           <h1>Hello ${user.firstname}</h1>
                           <p>Use this code to reset your password: ${token}</p>
                         </div>`,
-                      };
-                      await SendMail(emailInput);
+                    };
+                    await SendMail(emailInput);
                 } catch (error) {
                     ThrowError(error);
                 }
@@ -175,7 +177,7 @@ export default {
 
                 SaveAuditTrail({
                     user_id: user.id,
-                    email: user.email,
+                    name: `${user.title} ${user.firstname} ${user.lastname}`,
                     company_id: 0,
                     branch_id: 0,
                     task: 'FORGOT_PASSWORD',
@@ -216,7 +218,7 @@ export default {
 
                 SaveAuditTrail({
                     user_id: user.id,
-                    email: user.email,
+                    name: `${user.title} ${user.firstname} ${user.lastname}`,
                     company_id: 0,
                     branch_id: 0,
                     task: 'RESET_PASSWORD',
@@ -234,14 +236,17 @@ export default {
                 ThrowError("#RELOGIN");
             }
 
-            if (!firstname) {
+            if (!Validate.string(firstname)) {
                 ThrowError("firstname is required.");
             }
-            if (!lastname) {
+            if (!Validate.string(lastname)) {
                 ThrowError("lastname is required.");
             }
             if (!Validate.phone(phone)) {
                 ThrowError("Invalid Phone number.");
+            }
+            if (!Validate.string(gender)) {
+                ThrowError("Invalid gender.");
             }
             if (!Validate.date(date_of_birth)) {
                 ThrowError("Invalid date_of_birth");
@@ -273,24 +278,16 @@ export default {
                 ThrowError("Unable to update profile");
             }
 
-            try {
-                SaveAuditTrail({
-                    user_id: context.id,
-                    email: context.email,
-                    company_id: 0,
-                    branch_id: 0,
-                    task: 'UPDATE_PROFILE',
-                    details: 'User updated their profile'
-                });
-            } catch (error) {
-                ThrowError(error);
-            }
+            SaveAuditTrail({
+                user_id: context.id,
+                name: context.name,
+                company_id: 0,
+                branch_id: 0,
+                task: 'UPDATE_PROFILE',
+                details: 'User updated their profile'
+            });
 
-            try {
-                return await DBObject.findOne('users', { id: context.id });
-            } catch (error) {
-                ThrowError(error);
-            }
+            return await DBObject.findOne('users', { id: context.id });
         },
 
         async changePassword(_, { oldPassword, newPassword }: Record<string, string>, context: Record<string, any>) {
@@ -298,10 +295,10 @@ export default {
                 ThrowError("#RELOGIN");
             }
 
-            if (!oldPassword || oldPassword.length < 1) {
+            if (!Validate.string(oldPassword) || oldPassword.length < 1) {
                 ThrowError('Old password is required.');
             }
-            if (!newPassword || newPassword.length < 1) {
+            if (!Validate.string(newPassword) || newPassword.length < 1) {
                 ThrowError('New password is required!.');
             }
 
@@ -315,7 +312,8 @@ export default {
                     ThrowError('Invalid old password.');
                 }
             } catch (error) {
-                ThrowError(error);
+                log("changePassword", error);
+                ThrowError("Unable to change password. Please ry again");
             }
 
             let updated: number = 0;
@@ -323,7 +321,8 @@ export default {
                 const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
                 updated = await DBObject.updateOne('users', { password: hashedPassword }, { id: context.id });
             } catch (error) {
-                ThrowError(error);
+                log("changePassword", error);
+                ThrowError("Unable to change password. Please ry again");
             }
 
             if (updated < 1) {
@@ -333,11 +332,11 @@ export default {
             try {
                 SaveAuditTrail({
                     user_id: context.id,
-                    email: context.email,
+                    name: context.name,
                     company_id: 0,
                     branch_id: 0,
                     task: 'CHANGE_PASSWORD',
-                    details: 'User changed their password'
+                    details: 'Changed password'
                 });
             } catch (error) {
                 ThrowError(error);
@@ -354,30 +353,28 @@ export default {
                 ThrowError("Invalid Email");
             }
             if (!Validate.string(token)) {
-                ThrowError("Invalid token");
+                ThrowError("Invalid code");
             }
 
             let updated: number = 0;
             try {
                 const tokenRecord = await DBObject.findOne('tokens', { email, token, status: "PENDING" });
                 if (!tokenRecord || DateTime.fromSQL(tokenRecord.expires_at) < DateTime.now()) {
-                    ThrowError('#Invalid or expired token');
+                    ThrowError('Invalid or expired token');
                 }
 
-                updated = await DBObject.updateOne('users', { email_verified: true }, { email });
-                updated = await DBObject.updateOne('tokens', { status: "USED" }, { id: tokenRecord.id });
+                updated = await DBObject.updateOne('users', { email_verified: 1, status: "ACTIVE" }, { email });
+                DBObject.updateOne('tokens', { status: "USED" }, { id: tokenRecord.id });
 
                 const user = await DBObject.findOne('users', { email });
 
                 SaveAuditTrail({
                     user_id: user.id,
-                    email: user.email,
+                    name: `${user.title} ${user.firstname} ${user.lastname}`,
                     company_id: 0,
                     branch_id: 0,
                     task: 'VERIFY_EMAIL',
-                    details: 'User verified their email',
-                    ip_address: context.ip,
-                    browser_agents: context.userAgent,
+                    details: 'User verified their email'
                 });
             } catch (error) {
                 ThrowError(error);
@@ -391,43 +388,43 @@ export default {
         },
 
         async updateFirebaseToken(_, { token }: { token: string }, context: Record<string, any>) {
-            try {
-                if (!context.id) {
-                    ThrowError("#RELOGIN");
-                }
 
-                if (!Validate.string(token)) {
-                    ThrowError("Invalid token.");
-                }
-
-                try {
-                    await DBObject.updateOne('users', { firebase_token: token }, { id: context.id });
-                } catch (error) {
-                    /** do nothing **/
-                }
-
-                return 1;
-            } catch (error) {
-                ThrowError(error);
+            if (!context.id) {
+                ThrowError("#RELOGIN");
             }
+
+            if (!Validate.string(token)) {
+                ThrowError("Invalid token.");
+            }
+
+            DBObject.updateOne('users', { firebase_token: token }, { id: context.id })
+                .catch((error) => {
+                    log("updateFirebaseToken", error);
+                });
+
+            return 1;
         },
 
         async updateUserSettings(_, { settings }, context: Record<string, any>) {
+
+            if (!context.id) {
+                ThrowError("#RELOGIN");
+            }
+
+            if (!Validate.object(settings)) {
+                ThrowError("Invalid settings.");
+            }
             try {
-                if (!context.id) {
-                    ThrowError("#RELOGIN");
-                }
-
-                if (!Validate.object(settings)) {
-                    ThrowError("Invalid settings.");
-                }
-
                 const updatedSettings = JSON.stringify(settings);
-                await DBObject.updateOne('users', { settings: updatedSettings }, { id: context.id });
+                const updated = await DBObject.updateOne('users', { settings: updatedSettings }, { id: context.id });
+
+                if (!Validate.positiveInteger(updated)) {
+                    ThrowError("Unable to update settings.");
+                }
 
                 SaveAuditTrail({
                     user_id: context.id,
-                    email: context.email,
+                    name: context.name,
                     company_id: 0,
                     branch_id: 0,
                     task: 'UPDATE_USER_SETTINGS',
@@ -443,20 +440,31 @@ export default {
 
     Query: {
         async currentUser(_, __, context: Record<string, any>) {
-            try {
-                if (!context.id) {
-                    ThrowError("#RELOGIN");
-                }
+            if (!context.id) {
+                ThrowError("#RELOGIN");
+            }
 
+            try {
                 const user = await DBObject.findOne('users', { id: context.id });
                 if (!user) {
                     ThrowError("User not found.");
                 }
-
+                let settings = {};
+                let data = {};
+                try {
+                    settings = JSON.parse(user.settings);
+                } catch (error) {
+                    settings = {};
+                }
+                try {
+                    data = JSON.parse(user.data || "{}");
+                } catch (error) {
+                    data = {};
+                }
                 return {
                     ...user,
-                    settings: JSON.parse(user.settings || "{}"),
-                    data: JSON.parse(user.data || "{}")
+                    settings,
+                    data
                 };
             } catch (error) {
                 ThrowError(error);
@@ -464,15 +472,11 @@ export default {
         },
 
         getConfig: async (_, __, context: Record<string, any>) => {
-            try {
-                if (!context.id) {
-                    ThrowError("#RELOGIN");
-                }
-
-                return CONFIG.client;
-            } catch (error) {
-                ThrowError(error);
+            if (!context.id) {
+                ThrowError("#RELOGIN");
             }
+
+            return CONFIG.client;
         },
 
     }

@@ -10,21 +10,18 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN")
       };
-      if (!Validate.integer(company_id)) {
-        ThrowError("Invalid company ID.")
+
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+        ThrowError("#NOACCESS")
       }
-      if (!hasPermission({ context, company_id, tasks: ["GET_ALL_DEPARTMENTS"] })) {
-        ThrowError("#NO ACCESS.")
+
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.")
       }
       const pageSize = _CONFIG.settings.PAGINATION_LIMIT || 30;
       const calculatedOffset = offset * pageSize;
-      const query = `
-        SELECT id, name, description, created_at, updated_at
-        FROM hr_departments
-        WHERE company_id = :company_id
-        ORDER BY id
-        LIMIT :limit OFFSET :offset
-      `;
+      const query = `SELECT * FROM hr_departments
+        WHERE company_id = :company_id LIMIT :limit OFFSET :offset`;
       const params = {
         company_id,
         limit: pageSize,
@@ -34,7 +31,7 @@ export default {
         const results = await DBObject.findDirect(query, params);
         return results;
       } catch (error) {
-        ThrowError("Failed to find departments.");
+        ThrowError("Failed to fetch departments.");
       }
     },
   },
@@ -44,18 +41,20 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN")
       };
-      if (!Validate.integer(company_id)) {
+
+
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+        ThrowError("#NOACCESS")
+      }
+
+      if (!Validate.positiveInteger(company_id)) {
         ThrowError("Invalid company.")
       };
-      if (!hasPermission({ context, company_id, tasks: ["CREATE_DEPARTMENT"] })) {
-        ThrowError("NO ACCESS.")
-      };
+
       if (!Validate.string(name)) {
         ThrowError("Invalid name.")
       };
-      if (!Validate.string(description)) {
-        ThrowError("Invalid description.")
-      };
+
       const data = {
         company_id,
         name,
@@ -67,23 +66,15 @@ export default {
         if (!insertId) {
           ThrowError('Failed to create department');
         }
-        const newDepartment = await DBObject.findOne('hr_departments', { id: insertId });
-        if (!newDepartment) {
-          ThrowError('Failed to fetch created department');
-        }
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
-          branch_id: context.branch_id,
+          name: context.name,
+          branch_id: 0,
           company_id,
           task: "CREATE_DEPARTMENT",
-          details: `Created department: ${name}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
-        }).catch((error) => {
-          ThrowError(error)
-        });
-        return insertId;
+          details: `Created department: ${name}`
+        })
+        return await DBObject.findOne("hr_departments", { id: insertId });
       } catch (error) {
         ThrowError("Error creating department");
       }
@@ -93,69 +84,60 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN")
       };
-      if (!Validate.integer(id)) {
-        ThrowError("Invalid ID.")
+
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+        ThrowError("#NOACCESS")
       }
-      if (!Validate.integer(company_id)) {
-        ThrowError("Invalid company ID.")
+
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.")
       };
+
       if (!Validate.string(name)) {
         ThrowError("Invalid name.")
       };
-      if (!Validate.string(description)) {
-        ThrowError("Invalid description.")
-      };
 
-      const updatedData = { company_id, name, description };
+      const updatedData = { name, description };
       try {
-        const existingDepartment = await DBObject.findOne('hr_departments', { id, company_id });
-        if (!existingDepartment) {
-          ThrowError("Department not found or does not belong to the specified company");
-        }
-        if (!hasPermission({ context, company_id, tasks: ["UPDATE_DEPARTMENT"] })) {
-          ThrowError("NO ACCESS.")
-        };
-        const updatedID = await DBObject.updateOne("hr_departments", updatedData, { id });
+        const updatedID = await DBObject.updateOne("hr_departments", updatedData, { id, company_id });
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
-          branch_id: context.branch_id,
+          name: context.name,
+          branch_id: 0,
           company_id,
           task: "UPDATE_DEPARTMENT",
-          details: `Updated department: ${id}`
-        }).catch((e) => {
-          ThrowError(e.message)
+          details: `Updated department: ${id} to ${JSON.stringify(updatedData)}`,
         })
-        return updatedID;
+        return await DBObject.findOne("hr_departments", { id });
       } catch (error) {
         ThrowError("Error updating department information.");
       }
     },
 
-    async deleteDepartment(_, { id }, context: Record<string, any>) {
-      if (!Validate.integer(id)) {
-        ThrowError("Invalid ID.")
+    async deleteDepartment(_, { company_id, id }, context: Record<string, any>) {
+      if (!context.id) {
+        ThrowError("#RELOGIN")
       };
+
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+        ThrowError("#NOACCESS")
+      }
+      if (!Validate.positiveInteger(id)) {
+        ThrowError("Invalid department.")
+      };
+
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.")
+      }
+
       try {
-        const departmentToDelete = await DBObject.findOne('hr_departments', { id });
-        if (!departmentToDelete) {
-          ThrowError("Department not found.")
-        };
-        if (!hasPermission({ context, company_id: departmentToDelete.company_id, tasks: ["DELETE_DEPARTMENT"] })) {
-          ThrowError("NO ACCESS.")
-        }
-        const deletedID = await DBObject.deleteOne("hr_departments", { id });
+        const deletedID = await DBObject.deleteOne("hr_departments", { id, company_id });
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
-          branch_id: context.branch_id,
-          company_id: departmentToDelete.company_id,
+          name: context.name,
+          company_id: company_id,
           task: "DELETE_DEPARTMENT",
-          details: `Deleted department: ${id}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
-        }).catch((e) => {
-          ThrowError(e)
+          details: `Deleted department: ${id}`
         })
         return deletedID;
       } catch (error) {

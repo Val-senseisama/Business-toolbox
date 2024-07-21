@@ -68,7 +68,7 @@ export default {
       try {
         const ledgerData = { company_id, branch_id, details: JSON.stringify(details), type: 'LEDGER' };
         const insertId = await DBObject.insertOne('accounts', ledgerData);
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, branch_id, task: 'createLedger', details: `Created ledger for company ${company_id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, branch_id, task: 'createLedger', details: `Created ledger for company ${company_id}` });
         return insertId;
       } catch (error) {
         log('createLedger Mutation Error', error);
@@ -88,7 +88,7 @@ export default {
       try {
         const updatedData = { details: JSON.stringify(details) };
         await DBObject.updateOne('accounts', updatedData, { id, company_id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, branch_id, task: 'updateLedger', details: `Updated ledger ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, branch_id, task: 'updateLedger', details: `Updated ledger ID: ${id}` });
         return id;
       } catch (error) {
         log('updateLedger Mutation Error', error);
@@ -105,7 +105,7 @@ export default {
 
       try {
         await DBObject.deleteOne('accounts', { id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'deleteLedger', details: `Deleted ledger ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'deleteLedger', details: `Deleted ledger ID: ${id}` });
         return id;
       } catch (error) {
         log('deleteLedger Mutation Error', error);
@@ -124,7 +124,7 @@ export default {
       try {
         const customerData = { company_id, branch_id, details: JSON.stringify(details), type: 'CUSTOMER' };
         const insertId = await DBObject.insertOne('accounts', customerData);
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, branch_id, task: 'createCustomer', details: `Created customer for company ${company_id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, branch_id, task: 'createCustomer', details: `Created customer for company ${company_id}` });
         return insertId;
       } catch (error) {
         log('createCustomer Mutation Error', error);
@@ -144,7 +144,7 @@ export default {
       try {
         const updatedData = { details: JSON.stringify(details) };
         await DBObject.updateOne('accounts', updatedData, { id, company_id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, branch_id, task: 'updateCustomer', details: `Updated customer ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, branch_id, task: 'updateCustomer', details: `Updated customer ID: ${id}` });
         return id;
       } catch (error) {
         log('updateCustomer Mutation Error', error);
@@ -160,7 +160,7 @@ export default {
 
       try {
         await DBObject.deleteOne('accounts', { id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'deleteCustomer', details: `Deleted customer ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'deleteCustomer', details: `Deleted customer ID: ${id}` });
         return id;
       } catch (error) {
         log('deleteCustomer Mutation Error', error);
@@ -179,7 +179,7 @@ export default {
       try {
         const vendorData = { company_id, branch_id, details: JSON.stringify(details), type: 'VENDOR' };
         const insertId = await DBObject.insertOne('accounts', vendorData);
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, branch_id, task: 'createVendor', details: `Created vendor for company ${company_id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, branch_id, task: 'createVendor', details: `Created vendor for company ${company_id}` });
         return insertId;
       } catch (error) {
         log('createVendor Mutation Error', error);
@@ -199,7 +199,7 @@ export default {
       try {
         const updatedData = { details: JSON.stringify(details) };
         await DBObject.updateOne('accounts', updatedData, { id, company_id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, branch_id, task: 'updateVendor', details: `Updated vendor ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, branch_id, task: 'updateVendor', details: `Updated vendor ID: ${id}` });
         return id;
       } catch (error) {
         log('updateVendor Mutation Error', error);
@@ -216,7 +216,7 @@ export default {
 
       try {
         await DBObject.deleteOne('accounts', { id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'deleteVendor', details: `Deleted vendor ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'deleteVendor', details: `Deleted vendor ID: ${id}` });
         return id;
       } catch (error) {
         log('deleteVendor Mutation Error', error);
@@ -236,7 +236,7 @@ export default {
       try {
         const yearData = { company_id, name, start_date, end_date };
         const insertId = await DBObject.insertOne('accounting_year', yearData);
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'createAccountingYear', details: `Created accounting year: ${name}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'createAccountingYear', details: `Created accounting year: ${name}` });
         return insertId;
       } catch (error) {
         log('createAccountingYear Mutation Error', error);
@@ -257,7 +257,7 @@ export default {
       try {
         const updatedData = { name, start_date, end_date };
         await DBObject.updateOne('accounting_year', updatedData, { id, company_id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'updateAccountingYear', details: `Updated accounting year ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'updateAccountingYear', details: `Updated accounting year ID: ${id}` });
         return id;
       } catch (error) {
         log('updateAccountingYear Mutation Error', error);
@@ -275,7 +275,7 @@ export default {
 
       try {
         await DBObject.updateOne('accounting_year', { status: 'CLOSED' }, { id, company_id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'closeAccountingYear', details: `Closed accounting year ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'closeAccountingYear', details: `Closed accounting year ID: ${id}` });
         return id;
       } catch (error) {
         log('closeAccountingYear Mutation Error', error);
@@ -292,7 +292,7 @@ export default {
 
       try {
         await DBObject.deleteOne('accounting_year', { id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'deleteAccountingYear', details: `Deleted accounting year ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'deleteAccountingYear', details: `Deleted accounting year ID: ${id}` });
         return id;
       } catch (error) {
         log('deleteAccountingYear Mutation Error', error);
@@ -313,7 +313,7 @@ export default {
         const transactionData = { company_id, branch_id, value_date, remarks };
         // Assuming you will handle transaction creation logic
         const transactionId = await DBObject.insertOne('transactions', transactionData);
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'postTransaction', details: `Posted transaction ID: ${transactionId}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'postTransaction', details: `Posted transaction ID: ${transactionId}` });
         return transactionId;
       } catch (error) {
         log('postTransaction Mutation Error', error);
@@ -329,7 +329,7 @@ export default {
 
       try {
         await DBObject.deleteOne('transactions', { id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'deleteTransaction', details: `Deleted transaction ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'deleteTransaction', details: `Deleted transaction ID: ${id}` });
         return 'Transaction deleted successfully.';
       } catch (error) {
         log('deleteTransaction Mutation Error', error);
@@ -349,7 +349,7 @@ export default {
       try {
         const payrollData = { company_id, branch_id, name, schedule: JSON.stringify(schedule) };
         const insertId = await DBObject.insertOne('payrolls', payrollData);
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'createPayroll', details: `Created payroll: ${name}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'createPayroll', details: `Created payroll: ${name}` });
         return insertId;
       } catch (error) {
         log('createPayroll Mutation Error', error);
@@ -370,7 +370,7 @@ export default {
       try {
         const updatedData = { name, schedule: JSON.stringify(schedule) };
         await DBObject.updateOne('payrolls', updatedData, { id, company_id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'updatePayroll', details: `Updated payroll ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'updatePayroll', details: `Updated payroll ID: ${id}` });
         return id;
       } catch (error) {
         log('updatePayroll Mutation Error', error);
@@ -387,7 +387,7 @@ export default {
 
       try {
         await DBObject.deleteOne('payrolls', { id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'deletePayroll', details: `Deleted payroll ID: ${id}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'deletePayroll', details: `Deleted payroll ID: ${id}` });
         return id;
       } catch (error) {
         log('deletePayroll Mutation Error', error);
@@ -406,7 +406,7 @@ export default {
 
       try {
         const insertId = await DBObject.insertOne('payroll_liabilities', { company_id, branch_id, payroll_id, header_name });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'postPayrollLiability', details: `Posted payroll liability for ${header_name}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'postPayrollLiability', details: `Posted payroll liability for ${header_name}` });
         return insertId;
       } catch (error) {
         log('postPayrollLiability Mutation Error', error);
@@ -426,7 +426,7 @@ export default {
 
       try {
         const insertId = await DBObject.insertOne('payroll_expenses', { company_id, branch_id, payroll_id, header_name, bank_id });
-        SaveAuditTrail({ user_id: context.id, email: context.email, company_id, task: 'postPayrollExpense', details: `Posted payroll expense for ${header_name}` });
+        SaveAuditTrail({ user_id: context.id, name: context.name, company_id, task: 'postPayrollExpense', details: `Posted payroll expense for ${header_name}` });
         return insertId;
       } catch (error) {
         log('postPayrollExpense Mutation Error', error);

@@ -3,7 +3,7 @@ import { DBObject } from "../../Helpers/MySQL.js";
 import { DateTime } from "luxon";
 import { Validate } from "../../Helpers/Validate.js";
 import hasPermission from "../../Helpers/hasPermission.js";
-import _CONFIG from "../../config/config.js";
+import CONFIG from "../../config/config.js";
 
 export default {
     Query: {
@@ -11,34 +11,30 @@ export default {
             if (!context.id) {
                 ThrowError("#RELOGIN")
             };
-            if (!Validate.integer(company_id)) {
-                ThrowError("Invalid company_id.")
-            };
-            if (!Validate.integer(employee_id)) {
-                ThrowError("Invalid employee_id.")
-            };
 
-            if (!hasPermission({ context, company_id, tasks: ["GET_EMPLOYEE_QUALIFICATIONS"] })) {
-                ThrowError("NO ACCESS.")
+            if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+                ThrowError("#NOACCESS")
             }
 
-            const pageSize = _CONFIG.settings.PAGINATION_LIMIT || 30;
+            if (!Validate.positiveInteger(company_id)) {
+                ThrowError("Invalid company.")
+            };
+            if (!Validate.positiveInteger(employee_id)) {
+                ThrowError("Invalid employee.")
+            };
+
+            const pageSize = CONFIG.settings.PAGINATION_LIMIT || 30;
             const calculatedOffset = offset * pageSize;
-            const query = `
-              SELECT id, company_id, employee_id, type, description, date_obtained, 
-                     created_at, updated_at
-              FROM hr_qualifications
-              WHERE company_id = :company_id
-                AND employee_id = :employee_id
-              ORDER BY date_obtained DESC, id DESC
-              LIMIT:limit OFFSET :offset
-            `;
+            const query = `SELECT * FROM hr_qualifications
+              WHERE company_id = :company_id AND employee_id = :employee_id LIMIT :limit OFFSET :offset`;
+
             const params = {
-                company_id: company_id,
-                employee_id: employee_id,
+                company_id,
+                employee_id,
                 limit: pageSize,
                 offset: calculatedOffset
             };
+
             try {
                 const results = await DBObject.findDirect(query, params);
                 return results.map(qualification => ({

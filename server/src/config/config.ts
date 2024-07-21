@@ -27,6 +27,8 @@ const CONFIG = {
 	},
 	permissions: {
 		"roles": "Manage user roles",
+		"manage_users": "Manage company users.",
+		"manage_company": "Manage company info, settings, branches.",
 
 	},
 	models: [

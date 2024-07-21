@@ -69,11 +69,11 @@ export default `#graphql
     createCompany(name: String, about: String, address: String, city: String, state: String, country: String, phone: String, email: String, website: String, industry: String, logo: String, settings: JSON): Company!
     updateCompany(id: Int, name: String, about: String, address: String, city: String, state: String, country: String, phone: String, email: String, website: String, industry: String, logo: String, settings: JSON): Company!
     deleteCompany(id: Int): Int !#returns deleted company id
-    addUserToCompany(email: String, company_id: Int): UserBasic!
+    addUserToCompany(email: String, company_id: Int, branch_id: Int): UserBasic!
     removeUserFromCompany(user_company_id: Int, email: String, company_id: Int): UserBasic!
-    createCompanyBranch(company_id: Int, name: String, settings: JSON): Branch!
+    createCompanyBranch(company_id: Int, name: String, description: String, settings: JSON): Branch!
     deleteCompanyBranch(company_id: Int, branch_id: Int): Int #returns deleted branch id
-    updateCompanyBranch(company_id: Int, branch_id: Int, name: String, settings: JSON): Branch!
+    updateCompanyBranch(company_id: Int, branch_id: Int, description: String, name: String, settings: JSON): Branch!
     acceptPendingCompanyLink(user_company_id: Int, company_id: Int): CompanyBasic!
     updateCompanySettings(company_id: Int, settings: JSON): JSON
 
@@ -196,6 +196,7 @@ type Company {
     website: String
     industry: String
     logo: String
+    accounting_year_id: Int
     settings: JSON
     plan: String
     plan_expiry: String
@@ -212,6 +213,7 @@ type CompanyBasic {
     country: String
     phone: String
     email: String
+    accounting_year_id: Int
     website: String
     logo: String
 }

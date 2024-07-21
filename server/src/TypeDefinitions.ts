@@ -134,7 +134,7 @@ export default `#graphql
     deleteQualification(id: Int, company_id: Int): Int #returns deleted qualification id
 
     createPerformanceReview(company_id: Int, employee_id: Int, reviewer_id: Int, review_date: String, rating: Int, comments: String): PerformanceReview!
-    updatePerformanceReview(id: Int, company_id: Int, employee_id: Int, reviewer_id: Int, review_date: String, rating: Int, comments: String): PerformanceReview!
+    updatePerformanceReview(id: Int, company_id: Int, reviewer_id: Int, review_date: String, rating: Int, comments: String): PerformanceReview!
     deletePerformanceReview(id: Int, company_id: Int): Int #returns deleted performance review id
 
     checkEmployeeIn(company_id: Int, employee_id: Int): Int

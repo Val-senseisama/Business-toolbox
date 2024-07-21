@@ -119,23 +119,23 @@ export default `#graphql
     # HR
     createDepartment(company_id: Int, name: String, description: String): Department!
     updateDepartment(id: Int, company_id: Int, name: String, description: String): Department!
-    deleteDepartment(id: Int): Int #returns deleted department id
+    deleteDepartment(id: Int, company_id: Int): Int #returns deleted department id
 
     createJobTitle(company_id: Int, name: String, description: String): JobTitle!
     updateJobTitle(id: Int, company_id: Int, name: String, description: String): JobTitle!
-    deleteJobTitle(id: Int): Int #returns deleted job title id
+    deleteJobTitle(id: Int, company_id: Int): Int #returns deleted job title id
 
     createEmployee(company_id: Int, branch_id: Int, details: EmployeeDetails): Account!
     updateEmployee(id: Int, company_id: Int, branch_id: Int, details: EmployeeDetails): Account!
-    deleteEmployee(id: Int): Int #returns deleted employee id
+    deleteEmployee(id: Int, company_id: Int): Int #returns deleted employee id
 
     createQualification(company_id: Int, employee_id: Int, type: QualificationTypes, date_obtained: String, description: String): Qualification!
     updateQualification(id: Int, company_id: Int, employee_id: Int, type: QualificationTypes, date_obtained: String, description: String): Qualification!
-    deleteQualification(id: Int): Int #returns deleted qualification id
+    deleteQualification(id: Int, company_id: Int): Int #returns deleted qualification id
 
     createPerformanceReview(company_id: Int, employee_id: Int, reviewer_id: Int, review_date: String, rating: Int, comments: String): PerformanceReview!
     updatePerformanceReview(id: Int, company_id: Int, employee_id: Int, reviewer_id: Int, review_date: String, rating: Int, comments: String): PerformanceReview!
-    deletePerformanceReview(id: Int): Int #returns deleted performance review id
+    deletePerformanceReview(id: Int, company_id: Int): Int #returns deleted performance review id
 
     checkEmployeeIn(company_id: Int, employee_id: Int): Int
     checkEmployeeOut(company_id: Int, employee_id: Int): Int

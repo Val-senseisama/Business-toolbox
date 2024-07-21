@@ -1,35 +1,29 @@
 
-import { SaveAuditTrail, ThrowError } from "../../Helpers/Helpers.js";
+import { log, SaveAuditTrail, ThrowError } from "../../Helpers/Helpers.js";
 import { DBObject } from "../../Helpers/MySQL.js";
 import { Validate } from "../../Helpers/Validate.js";
 import hasPermission from "../../Helpers/hasPermission.js";
-import _CONFIG from "../../config/config.js";
+import CONFIG from "../../config/config.js";
 
 export default {
   Query: {
     async getAllEmployees(_, { company_id, offset }, context: Record<string, any>) {
       if (!context.id) {
         ThrowError("#RELOGIN")
-      }
-      if (!Validate.integer(company_id)) {
-        ThrowError("Invalid company ID.")
       };
 
-      if (!hasPermission({ context, company_id, tasks: ["GET_ALL_EMPLOYEES"] })) {
-        ThrowError("NO ACCESS.")
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+        ThrowError("#NOACCESS")
       }
 
-      const pageSize = _CONFIG.settings.PAGINATION_LIMIT || 30;
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.")
+      };
+
+      const pageSize = CONFIG.settings.PAGINATION_LIMIT || 30;
       const calculatedOffset = offset * pageSize;
-      const query = `
-              SELECT id, company_id, branch_id, details, type, category, balance, 
-                     created_at, updated_at
-              FROM accounts
-              WHERE company_id = :company_id
-                AND type = 'EMPLOYEE'  
-              ORDER BY id
-              LIMIT:limit OFFSET :offset
-            `;
+      const query = `SELECT * FROM accounts
+              WHERE company_id = :company_id AND type = 'EMPLOYEE' LIMIT:limit OFFSET :offset`;
       const params = {
         company_id,
         limit: pageSize,
@@ -38,25 +32,20 @@ export default {
 
       try {
         const results = await DBObject.findDirect(query, params);
-        SaveAuditTrail({
-          user_id: context.id,
-          name: context.name,
-          branch_id: context.branch_id,
-          company_id: context.company_id,
-          task: "GET_ALL_EMPLOYEES",
-          details: `Retrieved employees for company ${company_id}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
-        }).catch((error) => {
-          ThrowError(error);
+
+        return results.map(account => {
+          let details = {};
+          try {
+            details = JSON.parse(account.details);
+          } catch (error) {
+            details = {};
+          }
+          return {
+            ...account,
+            details,
+            balance: parseFloat(account.balance)
+          }
         });
-        return results.map(account => ({
-          ...account,
-          details: JSON.parse(account.details),
-          type: account.type.toUpperCase(),
-          category: account.category.toUpperCase(),
-          balance: parseFloat(account.balance)
-        }));
       } catch (error) {
         ThrowError("Failed to fetch employee.");
       }
@@ -67,18 +56,18 @@ export default {
       if (!context.id) {
         ThrowError("RELOGIN")
       };
-      if (!Validate.integer(company_id)) {
-        ThrowError("Invalid company.")
-      };
-      if (!Validate.integer(branch_id)) {
-        ThrowError("Invalid branch.")
-      };
-      if (!Validate.string(details)) {
-        ThrowError("Invalid details.")
+
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+        ThrowError("#NOACCESS")
       }
 
-      if (!hasPermission({ context, company_id, tasks: ["CREATE_EMPLOYEE"] })) {
-        ThrowError("NO ACCESS.")
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.")
+      };
+
+
+      if (!Validate.string(details)) {
+        ThrowError("Invalid details.")
       }
 
       const data = {
@@ -91,21 +80,22 @@ export default {
       };
       try {
         const insertedID = await DBObject.insertOne("accounts", data);
+        if (!insertedID) {
+          ThrowError("Failed to create employee.");
+        }
         SaveAuditTrail({
           user_id: context.id,
           name: context.name,
           branch_id: context.branch_id,
           company_id: context.company_id,
           task: "CREATE_EMPLOYEE",
-          details: `Created employee account for company ${company_id}, branch ${branch_id}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
-        }).catch((e) => {
-          ThrowError(e)
-        });
-        return insertedID;
+          details: `Created employee ${JSON.stringify(details)}`
+        })
+
+        return await DBObject.findOne("accounts", { id: insertedID });
       } catch (error) {
-        ThrowError(error);
+        log("CreateEmployee", error);
+        ThrowError("Failed to create employee.");
       }
     },
 
@@ -113,75 +103,78 @@ export default {
       if (!context.id) {
         ThrowError("#RELOGIN")
       };
-      if (!Validate.integer(company_id)) {
-        ThrowError("Invalid company ID.");
+
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+        ThrowError("#NOACCESS")
       }
-      if (!Validate.integer(id)) {
-        ThrowError("Invalid employee ID.")
+
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.");
+      }
+      if (!Validate.positiveInteger(id)) {
+        ThrowError("Invalid employee.")
       };
-      if (!Validate.integer(branch_id)) {
-        ThrowError("Invalid branch ID.")
-      };
-      if (!Validate.string(details)) {
+
+      if (!Validate.object(details)) {
         ThrowError("Invalid details.")
       }
 
-      if (!hasPermission({ context, company_id, tasks: ["UPDATE_EMPLOYEE"] })) {
-        ThrowError("NO ACCESS.")
-      }
       const updatedData = {
-        company_id,
         branch_id,
         details: JSON.stringify(details),
       };
       try {
         const updatedID = await DBObject.updateOne("accounts", updatedData, { id, company_id });
+        if (!updatedID) {
+          ThrowError("Failed to update employee.");
+        }
         SaveAuditTrail({
           user_id: context.id,
           name: context.name,
           branch_id: context.branch_id,
           company_id: context.company_id,
           task: "UPDATE_EMPLOYEE",
-          details: `Updated employee account ${id} for company ${company_id}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
-        }).catch((error) => {
-          ThrowError(error.message)
+          details: `Updated employee account ${id} to ${JSON.stringify(details)}`
         })
-        return updatedID;
+
+        return await DBObject.findOne("accounts", { id: updatedID });
       } catch (error) {
+        log("UpdateEmployee", error);
         ThrowError("Error updating Employee");
       }
     },
 
-    async deleteEmployee(_, { id }, context: Record<string, any>) {
-      if (!Validate.integer(id)) {
-        ThrowError("Invalid ID.");
+    async deleteEmployee(_, { id, company_id }, context: Record<string, any>) {
+      if (!context.id) {
+        ThrowError("#RELOGIN")
       };
-      try {
-        const employeeToDelete = await DBObject.findOne("accounts", { id, type: 'EMPLOYEE' });
-        if (!employeeToDelete) {
-          ThrowError("Employee not found");
-        }
-        if (!hasPermission({ context, company_id: employeeToDelete.company_id, tasks: ["DELETE_EMPLOYEE"] })) {
-          ThrowError("NO ACCESS.")
-        }
 
-        const deletedID = await DBObject.deleteOne("accounts", { id });
+      if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+        ThrowError("#NOACCESS")
+      }
+
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.");
+      }
+      if (!Validate.positiveInteger(id)) {
+        ThrowError("Invalid employee.")
+      }
+
+      try {
+        const deletedID = await DBObject.deleteOne("accounts", { id, company_id });
+        if (!deletedID) {
+          ThrowError("Failed to delete employee.");
+        }
         SaveAuditTrail({
           user_id: context.id,
           name: context.name,
-          branch_id: context.branch_id,
           company_id: context.company_id,
           task: "DELETE_EMPLOYEE",
-          details: `Deleted employee account ${id}`,
-          browser_agents: context.userAgent,
-          ip_address: context.ip
-        }).catch((error) => {
-          ThrowError(error);
-        });
+          details: `Deleted employee account ${id}`
+        })
         return deletedID;
       } catch (error) {
+        log("DeleteEmployee", error);
         ThrowError("Error deleting Employee");
       }
     }

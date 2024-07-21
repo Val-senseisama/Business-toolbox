@@ -37,11 +37,7 @@ export default {
 
             try {
                 const results = await DBObject.findDirect(query, params);
-                return results.map(qualification => ({
-                    ...qualification,
-                    type: qualification.type.toUpperCase(),
-                    date_obtained: qualification.date_obtained.toSQL(),
-                }));
+                return results;
             } catch (error) {
                 ThrowError("Failed to fetch employee qualifications");
             }
@@ -52,26 +48,24 @@ export default {
             if (!context.id) {
                 ThrowError("#RELOGIN")
             };
-            if (!Validate.integer(company_id)) {
+
+            if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+                ThrowError("#NOACCESS")
+            }
+
+            if (!Validate.positiveInteger(company_id)) {
                 ThrowError("Invalid company ID.")
             };
-            if (!Validate.integer(employee_id)) {
+            if (!Validate.positiveInteger(employee_id)) {
                 ThrowError("Invalid employee ID.")
             };
-
-            if (!hasPermission({ context, company_id, tasks: ["CREATE_QUALIFICATION"] })) {
-                ThrowError("NO ACCESS.")
-            }
 
             if (!Validate.date(date_obtained)) {
                 ThrowError("Invalid Date.")
             };
-            if (!Validate.string(description)) {
-                ThrowError("Invalid description.")
-            };
 
-            const validTypes = ['EXPERIENCE', 'EDUCATION', 'CERTIFICATION', 'OTHERS'];
-            if (!validTypes.includes(type)) {
+
+            if (!['EXPERIENCE', 'EDUCATION', 'CERTIFICATION', 'OTHERS'].includes(type)) {
                 ThrowError('Invalid qualification type');
             }
             const qualification = {
@@ -86,14 +80,10 @@ export default {
                 SaveAuditTrail({
                     user_id: context.id,
                     name: context.name,
-                    branch_id: context.branch_id,
-                    company_id: context.company_id,
+                    branch_id: 0,
+                    company_id: company_id,
                     task: "CREATE_QUALIFICATION",
-                    details: `Created ${type} qualification for employee ${employee_id}`,
-                    browser_agents: context.userAgent,
-                    ip_address: context.ip
-                }).catch((error) => {
-                    ThrowError(error)
+                    details: `Created ${type} qualification for employee ${employee_id}`
                 })
                 return insertedId;
             } catch (error) {
@@ -104,26 +94,28 @@ export default {
             if (!context.id) {
                 ThrowError("#RELOGIN")
             };
-            if (!Validate.integer(id)) {
+
+            if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+                ThrowError("#NOACCESS")
+            }
+
+            if (!Validate.positiveInteger(id)) {
                 ThrowError("Invalid ID.")
             }
-            if (!Validate.integer(company_id)) {
+            if (!Validate.positiveInteger(company_id)) {
                 ThrowError("Invalid company ID.")
             };
 
-            if (!hasPermission({ context, company_id, tasks: ["UPDATE_QUALIFICATION"] })) {
-                ThrowError("NO ACCESS.")
-            }
-
-            if (!Validate.integer(employee_id)) {
+            if (!Validate.positiveInteger(employee_id)) {
                 ThrowError("Invalid employee ID.")
             };
             if (!Validate.date(date_obtained)) {
                 ThrowError("Invalid date.")
             };
-            if (!Validate.string(description)) {
-                ThrowError("Invalid description.")
-            };
+
+            if (!['EXPERIENCE', 'EDUCATION', 'CERTIFICATION', 'OTHERS'].includes(type)) {
+                ThrowError('Invalid qualification type');
+            }
 
             const updatedData = {
                 company_id,
@@ -140,45 +132,41 @@ export default {
                     branch_id: context.branch_id,
                     company_id: context.company_id,
                     task: "UPDATE_QUALIFICATION",
-                    details: `Updated qualification ${id} for employee ${employee_id}`,
-                    browser_agents: context.userAgent,
-                    ip_address: context.ip
-                }).catch((error) => {
-                    ThrowError(error);
-                });
+                    details: `Updated qualification ${id} for employee ${employee_id} to ${JSON.stringify(updatedData)}`,
+                })
                 return updatedID;
             } catch (error) {
                 ThrowError("Error updating hr_qualifications");
             }
         },
-        async deleteQualification(_, { id }, context: Record<string, any>) {
-            if (!Validate.integer(id)) {
-                ThrowError("Invalid ID.")
+        async deleteQualification(_, { id, company_id }, context: Record<string, any>) {
+            if (!context.id) {
+                ThrowError("#RELOGIN")
+            };
+
+            if (!hasPermission({ context, company_id, tasks: ["manage_hr"] })) {
+                ThrowError("#NOACCESS")
             }
+
+            if (!Validate.positiveInteger(id)) {
+                ThrowError("Invalid Qualification.")
+            }
+
+            if (!Validate.positiveInteger(company_id)) {
+                ThrowError("Invalid company.")
+            }
+
             try {
-                const qualificationToDelete = await DBObject.findOne("hr_qualifications", { id });
-                if (!qualificationToDelete) {
-                    ThrowError("Qualification not found")
-                };
-
-                if (!hasPermission({ context, company_id: qualificationToDelete.company_id, tasks: ["DELETE_QUALIFICATION"] })) {
-                    ThrowError("NO ACCESS.")
-                }
-
-                const deletedID = await DBObject.deleteOne("hr_qualifications", { id });
+                const qualificationToDelete = await DBObject.findOne("hr_qualifications", { id, company_id });
+                const deletedID = await DBObject.deleteOne("hr_qualifications", { id, company_id });
                 SaveAuditTrail({
                     user_id: context.id,
                     name: context.name,
-                    branch_id: context.branch_id,
-                    company_id: qualificationToDelete.company_id,
+                    branch_id: 0,
+                    company_id: company_id,
                     task: "DELETE_QUALIFICATION",
-                    details: `Deleted qualification ${id} for employee ${qualificationToDelete.employee_id}`,
-                    browser_agents: context.userAgent,
-                    ip_address: context.ip
-                }).catch(err => {
-                    ThrowError(err);
-                });
-
+                    details: `Deleted qualification ${id} for employee ${qualificationToDelete.employee_id}`
+                })
                 return deletedID;
             } catch (error) {
                 ThrowError("Error deleting HR qualification");

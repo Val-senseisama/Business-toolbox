@@ -9,14 +9,14 @@ import bcrypt from "bcrypt";
 import CONFIG from "../../config/config.js";
 import { uuid } from "../../Helpers/Helpers.js";
 import SendMail from "../../Helpers/SendMail.js";
-import MailInput  from "../../Helpers/SendMail.js";
+import MailInput from "../../Helpers/SendMail.js";
 
 type MailInput = {
     recipients: string;
     subject: string;
     message: string;
     attachment?: any[];
-  };
+};
 
 
 const SALT_ROUNDS = 10;
@@ -46,7 +46,7 @@ export default {
 
                 SaveAuditTrail({
                     user_id: user.id,
-                    email: user.email,
+                    name: `${user.title} ${user.firstname} ${user.lastname}`,
                     company_id: 0,
                     branch_id: 0,
                     task: 'LOGIN',
@@ -118,15 +118,15 @@ export default {
                           <h1>Hello ${firstname}</h1>
                           <p>Use this code to register: ${verificationToken}</p>
                         </div>`,
-                      };
-                      await SendMail(emailInput);
+                    };
+                    await SendMail(emailInput);
                 } catch (error) {
                     ThrowError(error);
                 }
 
                 SaveAuditTrail({
                     user_id: userId,
-                    email,
+                    name: `${title} ${firstname} ${lastname}`,
                     company_id: 0,
                     branch_id: 0,
                     task: 'REGISTER',
@@ -165,8 +165,8 @@ export default {
                           <h1>Hello ${user.firstname}</h1>
                           <p>Use this code to reset your password: ${token}</p>
                         </div>`,
-                      };
-                      await SendMail(emailInput);
+                    };
+                    await SendMail(emailInput);
                 } catch (error) {
                     ThrowError(error);
                 }
@@ -175,7 +175,7 @@ export default {
 
                 SaveAuditTrail({
                     user_id: user.id,
-                    email: user.email,
+                    name: `${user.title} ${user.firstname} ${user.lastname}`,
                     company_id: 0,
                     branch_id: 0,
                     task: 'FORGOT_PASSWORD',
@@ -216,7 +216,7 @@ export default {
 
                 SaveAuditTrail({
                     user_id: user.id,
-                    email: user.email,
+                    name: `${user.title} ${user.firstname} ${user.lastname}`,
                     company_id: 0,
                     branch_id: 0,
                     task: 'RESET_PASSWORD',
@@ -276,7 +276,7 @@ export default {
             try {
                 SaveAuditTrail({
                     user_id: context.id,
-                    email: context.email,
+                    name: context.name,
                     company_id: 0,
                     branch_id: 0,
                     task: 'UPDATE_PROFILE',
@@ -333,7 +333,7 @@ export default {
             try {
                 SaveAuditTrail({
                     user_id: context.id,
-                    email: context.email,
+                    name: context.name,
                     company_id: 0,
                     branch_id: 0,
                     task: 'CHANGE_PASSWORD',
@@ -371,7 +371,7 @@ export default {
 
                 SaveAuditTrail({
                     user_id: user.id,
-                    email: user.email,
+                    name: `${user.title} ${user.firstname} ${user.lastname}`,
                     company_id: 0,
                     branch_id: 0,
                     task: 'VERIFY_EMAIL',
@@ -427,7 +427,7 @@ export default {
 
                 SaveAuditTrail({
                     user_id: context.id,
-                    email: context.email,
+                    name: context.name,
                     company_id: 0,
                     branch_id: 0,
                     task: 'UPDATE_USER_SETTINGS',

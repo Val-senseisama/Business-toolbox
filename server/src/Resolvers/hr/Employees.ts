@@ -8,10 +8,10 @@ import _CONFIG from "../../config/config.js";
 export default {
   Query: {
     async getAllEmployees(_, { company_id, offset }, context: Record<string, any>) {
-      if(!context.id){
+      if (!context.id) {
         ThrowError("#RELOGIN")
       }
-      if(!Validate.integer(company_id)) {
+      if (!Validate.integer(company_id)) {
         ThrowError("Invalid company ID.")
       };
 
@@ -30,7 +30,7 @@ export default {
               ORDER BY id
               LIMIT:limit OFFSET :offset
             `;
-      const params = { 
+      const params = {
         company_id,
         limit: pageSize,
         offset: calculatedOffset
@@ -40,14 +40,14 @@ export default {
         const results = await DBObject.findDirect(query, params);
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           branch_id: context.branch_id,
           company_id: context.company_id,
           task: "GET_ALL_EMPLOYEES",
           details: `Retrieved employees for company ${company_id}`,
           browser_agents: context.userAgent,
           ip_address: context.ip
-        }).catch((error)=>{
+        }).catch((error) => {
           ThrowError(error);
         });
         return results.map(account => ({
@@ -67,13 +67,13 @@ export default {
       if (!context.id) {
         ThrowError("RELOGIN")
       };
-      if(!Validate.integer(company_id)){
+      if (!Validate.integer(company_id)) {
         ThrowError("Invalid company.")
       };
-      if(!Validate.integer(branch_id)){
+      if (!Validate.integer(branch_id)) {
         ThrowError("Invalid branch.")
       };
-      if(!Validate.string(details)){
+      if (!Validate.string(details)) {
         ThrowError("Invalid details.")
       }
 
@@ -93,14 +93,14 @@ export default {
         const insertedID = await DBObject.insertOne("accounts", data);
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           branch_id: context.branch_id,
           company_id: context.company_id,
           task: "CREATE_EMPLOYEE",
           details: `Created employee account for company ${company_id}, branch ${branch_id}`,
           browser_agents: context.userAgent,
           ip_address: context.ip
-        }).catch((e)=>{
+        }).catch((e) => {
           ThrowError(e)
         });
         return insertedID;
@@ -119,10 +119,10 @@ export default {
       if (!Validate.integer(id)) {
         ThrowError("Invalid employee ID.")
       };
-      if(!Validate.integer(branch_id)) {
+      if (!Validate.integer(branch_id)) {
         ThrowError("Invalid branch ID.")
       };
-      if(!Validate.string(details)){
+      if (!Validate.string(details)) {
         ThrowError("Invalid details.")
       }
 
@@ -138,7 +138,7 @@ export default {
         const updatedID = await DBObject.updateOne("accounts", updatedData, { id, company_id });
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           branch_id: context.branch_id,
           company_id: context.company_id,
           task: "UPDATE_EMPLOYEE",
@@ -160,7 +160,7 @@ export default {
       };
       try {
         const employeeToDelete = await DBObject.findOne("accounts", { id, type: 'EMPLOYEE' });
-        if (!employeeToDelete){
+        if (!employeeToDelete) {
           ThrowError("Employee not found");
         }
         if (!hasPermission({ context, company_id: employeeToDelete.company_id, tasks: ["DELETE_EMPLOYEE"] })) {
@@ -170,14 +170,14 @@ export default {
         const deletedID = await DBObject.deleteOne("accounts", { id });
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           branch_id: context.branch_id,
           company_id: context.company_id,
           task: "DELETE_EMPLOYEE",
           details: `Deleted employee account ${id}`,
           browser_agents: context.userAgent,
           ip_address: context.ip
-        }).catch((error)=>{
+        }).catch((error) => {
           ThrowError(error);
         });
         return deletedID;

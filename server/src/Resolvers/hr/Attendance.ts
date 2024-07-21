@@ -80,7 +80,7 @@ export default {
         const attendanceId = await DBObject.insertOne('hr_attendance', data);
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           company_id,
           task: "CHECK_IN",
           details: `Checked in employee ${employee_id} on ${data.attendance_date}`,
@@ -111,7 +111,7 @@ export default {
         }
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           company_id,
           task: "CHECK_OUT",
           details: `Checked out employee ${employee_id} at ${checkOutTime}`,
@@ -142,7 +142,7 @@ export default {
         const updatedCount = await DBObject.updateOne('hr_attendance', data, { company_id, employee_id, attendance_date });
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           company_id,
           task: "UPDATE_ATTENDANCE",
           details: `Updated attendance for employee ${employee_id} on ${attendance_date}`,
@@ -174,7 +174,7 @@ export default {
         const updateCount = await DBObject.updateMany('hr_attendance', updates, { company_id, attendance_date, check_in, check_out });
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           company_id,
           task: "UPDATE_MULTIPLE_ATTENDANCES",
           details: `Updated attendance for multiple employees on ${attendance_date}`,

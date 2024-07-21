@@ -73,7 +73,7 @@ export default {
         }
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           branch_id: context.branch_id,
           company_id,
           task: "CREATE_DEPARTMENT",
@@ -118,7 +118,7 @@ export default {
         const updatedID = await DBObject.updateOne("hr_departments", updatedData, { id });
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           branch_id: context.branch_id,
           company_id,
           task: "UPDATE_DEPARTMENT",
@@ -147,7 +147,7 @@ export default {
         const deletedID = await DBObject.deleteOne("hr_departments", { id });
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           branch_id: context.branch_id,
           company_id: departmentToDelete.company_id,
           task: "DELETE_DEPARTMENT",

@@ -79,8 +79,8 @@ export default `#graphql
 
     # Company Roles Management
     createRole(company_id: Int, name: String, json: JSON): Role!
-    updateRole(id: Int, name: String, json: JSON, status: String): Role!
-    deleteRole(id: Int): Int #returns deleted role id
+    updateRole(id: Int, company_id: Int, name: String, json: JSON, status: String): Role!
+    deleteRole(id: Int, company_id: Int): Int #returns deleted role id
 
 
 

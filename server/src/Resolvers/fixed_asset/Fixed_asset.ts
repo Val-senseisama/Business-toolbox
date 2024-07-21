@@ -149,7 +149,7 @@ export default {
           user_id: context.id,
           company_id,
           branch_id: 0,
-          email: context.email,
+          name: context.name,
           task: "createAssetCategory",
           details: `Created asset category: ${name}`,
         });
@@ -178,7 +178,7 @@ export default {
           user_id: context.id,
           company_id,
           branch_id: 0,
-          email: context.email,
+          name: context.name,
           task: "updateAssetCategory",
           details: `Updated asset category ID: ${id}`,
         });
@@ -203,7 +203,7 @@ export default {
           user_id: context.id,
           company_id,
           branch_id: 0,
-          email: context.email,
+          name: context.name,
           task: "deleteAssetCategory",
           details: `Deleted asset category ID: ${id}`,
         });
@@ -231,7 +231,7 @@ export default {
           user_id: context.id,
           company_id,
           branch_id: 0,
-          email: context.email,
+          name: context.name,
           task: "createAssetItem",
           details: `Created asset item: ${name}`,
         });
@@ -257,7 +257,7 @@ export default {
           user_id: context.id,
           company_id,
           branch_id: 0,
-          email: context.email,
+          name: context.name,
           task: "updateAssetItem",
           details: `Updated asset item ID: ${id}`,
         });
@@ -282,7 +282,7 @@ export default {
           user_id: context.id,
           company_id,
           branch_id: 0,
-          email: context.email,
+          name: context.name,
           task: "deleteAssetItem",
           details: `Deleted asset item ID: ${id}`,
         });

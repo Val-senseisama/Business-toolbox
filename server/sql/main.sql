@@ -84,7 +84,7 @@ CREATE TABLE
         user_id INT UNSIGNED NOT NULL,
         company_id INT UNSIGNED NOT NULL,
         branch_id INT UNSIGNED NOT NULL,
-        email VARCHAR(100) NOT NULL,
+        name VARCHAR(100) NOT NULL,
         ip_address VARCHAR(45) DEFAULT NULL,
         browser_agents TEXT DEFAULT NULL,
         task VARCHAR(100) NOT NULL,

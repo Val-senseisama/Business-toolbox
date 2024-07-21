@@ -8,18 +8,18 @@ import _CONFIG from "../../config/config.js";
 export default {
     Query: {
         async getEmployeePerformanceReviews(_, { company_id, employee_id, offset }, context: Record<string, any>) {
-            if(!context.id){
+            if (!context.id) {
                 ThrowError("#RELOGIN")
             };
-            if(!Validate.integer(company_id)){
+            if (!Validate.integer(company_id)) {
                 ThrowError("Invalid company.")
             };
-            if(!Validate.integer(employee_id)){
+            if (!Validate.integer(employee_id)) {
                 ThrowError("Invalid employee id.")
             };
             if (!hasPermission({ context, company_id, tasks: ["GET_EMPLOYEE_PERFORMANCE_REVIEWS"] })) {
                 ThrowError("NO ACCESS.")
-              }
+            }
             const pageSize = _CONFIG.settings.PAGINATION_LIMIT || 30;
             const calculatedOffset = offset * pageSize;
             const query = `
@@ -32,23 +32,23 @@ export default {
               LIMIT:limit OFFSET :offset
             `;
             const params = {
-                company_id: company_id, 
-                employee_id: employee_id, 
+                company_id: company_id,
+                employee_id: employee_id,
                 limit: pageSize,
-                offset: calculatedOffset                
-               };
+                offset: calculatedOffset
+            };
             try {
                 const results = await DBObject.findDirect(query, params);
-                 SaveAuditTrail({
+                SaveAuditTrail({
                     user_id: context.id,
-                    email: context.email,
+                    name: context.name,
                     branch_id: context.branch_id,
                     company_id: context.company_id,
                     task: "GET_EMPLOYEE_PERFORMANCE_REVIEWS",
                     details: `Retrieved performance reviews for employee ${employee_id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                }).catch((error)=>{
+                }).catch((error) => {
                     ThrowError(error);
                 });
                 return results.map(review => ({
@@ -74,10 +74,10 @@ export default {
             if (!Validate.integer(employee_id)) {
                 ThrowError("Invalid employee ID.");
             };
-            if(!Validate.integer(reviewer_id)){
+            if (!Validate.integer(reviewer_id)) {
                 ThrowError("INvalid reviewer ID.")
             };
-            if(!Validate.date(review_date)){
+            if (!Validate.date(review_date)) {
                 ThrowError("Invalid Date.")
             };
             if (!Validate.integer(rating)) {
@@ -88,7 +88,7 @@ export default {
             };
             if (!hasPermission({ context, company_id, tasks: ["CREATE_PERFORMANCE_REVIEW"] })) {
                 ThrowError("NO ACCESS.")
-              }
+            }
             const insertedData = {
                 company_id,
                 employee_id,
@@ -101,14 +101,14 @@ export default {
                 const insertedID = await DBObject.insertOne("hr_performance_reviews", insertedData);
                 SaveAuditTrail({
                     user_id: context.id,
-                    email: context.email,
+                    name: context.name,
                     branch_id: context.branch_id,
                     company_id: context.company_id,
                     task: "CREATE_PERFORMANCE_REVIEW",
                     details: `Created performance review for employee ${employee_id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                }).catch((error)=>{
+                }).catch((error) => {
                     ThrowError(error);
                 })
                 return insertedID;
@@ -121,7 +121,7 @@ export default {
             if (!context.id) {
                 ThrowError("#RELOGIN")
             };
-            if(!Validate.integer(id)){
+            if (!Validate.integer(id)) {
                 ThrowError("Invalid ID.")
             };
             if (!Validate.integer(company_id)) {
@@ -131,10 +131,10 @@ export default {
             if (!Validate.integer(employee_id)) {
                 ThrowError("Invalid employee ID.");
             };
-            if(!Validate.integer(reviewer_id)){
+            if (!Validate.integer(reviewer_id)) {
                 ThrowError("Invalid reviewer ID.")
             };
-            if(!Validate.date(review_date)){
+            if (!Validate.date(review_date)) {
                 ThrowError("Invalid Date.")
             };
             if (!Validate.integer(rating)) {
@@ -145,7 +145,7 @@ export default {
             };
             if (!hasPermission({ context, company_id, tasks: ["UPDATE_PERFORMANCE_REVIEW"] })) {
                 ThrowError("NO ACCESS.")
-              }
+            }
             const updateData = {
                 company_id,
                 employee_id,
@@ -156,16 +156,16 @@ export default {
             };
             try {
                 const updatedID = await DBObject.updateOne("hr_performance_reviews", updateData, { id });
-                 SaveAuditTrail({
+                SaveAuditTrail({
                     user_id: context.id,
-                    email: context.email,
+                    name: context.name,
                     branch_id: context.branch_id,
                     company_id: context.company_id,
                     task: "UPDATE_PERFORMANCE_REVIEW",
                     details: `Updated performance review ${id} for employee ${employee_id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                }).catch((error)=>{
+                }).catch((error) => {
                     ThrowError(error);
                 });
                 return updatedID;
@@ -175,28 +175,28 @@ export default {
         },
 
         async deletePerformanceReview(_, { id }, context: Record<string, any>) {
-            if(!Validate.integer(id)){
+            if (!Validate.integer(id)) {
                 ThrowError("Invalid ID.")
             };
             try {
                 const reviewToDelete = await DBObject.findOne("hr_performance_reviews", { id });
-                if (!reviewToDelete){
+                if (!reviewToDelete) {
                     ThrowError("Review not found");
                 };
                 if (!hasPermission({ context, company_id: reviewToDelete.company_id, tasks: ["DELETE_PERFORMANCE_REVIEW"] })) {
                     ThrowError("NO ACCESS.")
-                  }
+                }
                 const deleteID = await DBObject.deleteOne("hr_performance_reviews", { id });
-                 SaveAuditTrail({
+                SaveAuditTrail({
                     user_id: context.id,
-                    email: context.email,
+                    name: context.name,
                     branch_id: context.branch_id,
                     company_id: context.company_id,
                     task: "DELETE_PERFORMANCE_REVIEW",
                     details: `Deleted performance review ${id}`,
                     browser_agents: context.userAgent,
                     ip_address: context.ip
-                }).catch((error)=>{
+                }).catch((error) => {
                     ThrowError(error)
                 })
                 return deleteID;

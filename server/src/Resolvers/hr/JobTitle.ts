@@ -9,10 +9,10 @@ import _CONFIG from "../../config/config.js";
 export default {
   Query: {
     async getAllJobTitles(_, { company_id, offset }, context: Record<string, any>) {
-      if(!context.id){
+      if (!context.id) {
         ThrowError("#RELOGIN")
       };
-      if(!Validate.integer(company_id)){
+      if (!Validate.integer(company_id)) {
         ThrowError("Invalid company.")
       };
       if (!hasPermission({ context, company_id, tasks: ["GET_ALL_JOB_TITLES"] })) {
@@ -27,16 +27,16 @@ export default {
               ORDER BY id
               LIMIT:limit OFFSET :offset
             `;
-            const params = { 
-              company_id,
-              limit: pageSize,
-              offset: calculatedOffset
-             };
+      const params = {
+        company_id,
+        limit: pageSize,
+        offset: calculatedOffset
+      };
       try {
         const results = await DBObject.findDirect(query, params);
-         SaveAuditTrail({
+        SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           branch_id: context.branch_id,
           company_id,
           task: "GET_ALL_JOB_TITLES",
@@ -47,7 +47,7 @@ export default {
           ThrowError(error.message)
         })
         return results;
-      
+
       } catch (error) {
         ThrowError("Failed to fetch job titles");
       }
@@ -55,7 +55,7 @@ export default {
   },
   Mutation: {
     async createJobTitle(_, { company_id, name, description }, context: Record<string, any>) {
-      if(!context.id){
+      if (!context.id) {
         ThrowError("#RELOGIN")
       }
       if (!Validate.integer(company_id)) {
@@ -82,16 +82,16 @@ export default {
           ThrowError('Failed to create JobTitle.');
         }
 
-       SaveAuditTrail({
+        SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           branch_id: context.branch_id,
           company_id,
           task: "CREATE_JOB_TITLE",
           details: `Created job title: ${name}`,
           browser_agents: context.userAgent,
           ip_address: context.ip
-        }).catch((error)=>{
+        }).catch((error) => {
           ThrowError(error)
         });
         return insertedId;
@@ -100,7 +100,7 @@ export default {
       }
     },
     async updateJobTitle(_, { id, company_id, name, description }, context: Record<string, any>) {
-      if(!context.id){
+      if (!context.id) {
         ThrowError("#RELOGIN")
       }
       if (!Validate.integer(company_id)) {
@@ -124,14 +124,14 @@ export default {
         const updatedID = await DBObject.updateOne("hr_job_titles", updatedData, { id });
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           branch_id: context.branch_id,
           company_id,
           task: "UPDATE_JOB_TITLE",
           details: `Updated job title: ${id}`,
           browser_agents: context.userAgent,
           ip_address: context.ip
-        }).catch((error)=>{
+        }).catch((error) => {
           ThrowError(error);
         })
         return updatedID;
@@ -155,7 +155,7 @@ export default {
         const deletedID = await DBObject.deleteOne("hr_job_titles", { id });
         SaveAuditTrail({
           user_id: context.id,
-          email: context.email,
+          name: context.name,
           branch_id: context.branch_id,
           company_id: jobTitleToDelete.company_id,
           task: "DELETE_JOB_TITLE",

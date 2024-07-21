@@ -131,37 +131,37 @@ export const saveFirebaseMessage = async (
 
 
 export const SaveAuditTrail = async (data: AuditTrailType): Promise<void> => {
-    // Set default values for optional properties
-    data.ip_address = data.ip_address || "";
-    data.created_at = data.created_at || DateTime.now().toSQL();
+	// Set default values for optional properties
+	data.ip_address = data.ip_address || "";
+	data.created_at = data.created_at || DateTime.now().toSQL();
 
-    // Remove properties that are no longer part of AuditTrailType
-    const { 
-        user_id, 
-        email, 
-        company_id, 
-        branch_id, 
-        browser_agents, 
-        task, 
-        details, 
-        ip_address, 
-        created_at 
-    } = data;
+	// Remove properties that are no longer part of AuditTrailType
+	const {
+		user_id,
+		name,
+		company_id,
+		branch_id,
+		browser_agents,
+		task,
+		details,
+		ip_address,
+		created_at
+	} = data;
 
-    const auditTrailData = {
-        user_id,
-        email,
-        company_id,
-        branch_id,
-        browser_agents,
-        task,
-        details,
-        ip_address,
-        created_at
-    };
+	const auditTrailData = {
+		user_id,
+		name,
+		company_id,
+		branch_id,
+		browser_agents,
+		task,
+		details,
+		ip_address,
+		created_at
+	};
 
-    pendingAuditTrails.push(auditTrailData);
-    if (pendingAuditTrails.length > CONFIG.settings.MAX_LOG_STACK) {
-        await commitMemory();
-    }
+	pendingAuditTrails.push(auditTrailData);
+	if (pendingAuditTrails.length > CONFIG.settings.MAX_LOG_STACK) {
+		await commitMemory();
+	}
 };

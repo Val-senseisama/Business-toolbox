@@ -395,3 +395,10 @@ CREATE TABLE
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
         FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE CASCADE
     );
+
+CREATE TABLE
+    IF NOT EXISTS ai_curated_email_messages (
+        id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+        tag VARCHAR(100) NOT NULL,
+        message TEXT NOT NULL
+    );

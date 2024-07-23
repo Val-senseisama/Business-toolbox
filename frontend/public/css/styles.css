@@ -1,3 +1,41 @@
+@font-face {
+    font-family: 'Satoshi';
+    src: url('../fonts/Satoshi-Variable.woff2') format('woff2'),
+        url('../fonts/Satoshi-Variable.woff') format('woff'),
+        url('../fonts/Satoshi-Variable.ttf') format('truetype');
+    font-weight: 300 900;
+    font-display: swap;
+    font-style: normal;
+}
+
+
+html,
+body {
+    background-color: #ffffff;
+    font-family: Satoshi;
+    /* margin: 0px;
+    padding: 0px; */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #1C252C;
+    font-weight: 700;
+}
+
+h3 {
+    font-family: Satoshi;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 24.3px;
+    margin-bottom: 25px;
+}
+
+
 .loading {
     position: fixed;
     top: 0px;
@@ -5,4 +43,133 @@
     width: 100vw;
     height: 100vh;
     z-index: 99;
+}
+
+.form-control {
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 8px;
+    border: 1px solid #D4D2D8;
+}
+
+.form-control:focus {
+    outline: none;
+    border: 1px solid #FF6600;
+}
+
+.form-control::placeholder {
+    color: #D4D2D8;
+}
+
+.button {
+    /* width: Fixed (343px)px;
+    height: Fixed (48px)px; */
+    margin-top: 16px;
+    padding: 16px 24px 16px 24px;
+    border-radius: 100px;
+    font-family: Satoshi;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 18.9px;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+}
+
+
+.primary {
+    background-color: #FF6600;
+    color: #ffffff;
+    border: none;
+}
+
+.outline-primary {
+    background-color: #ffffff00;
+    color: #FF6600;
+    border: #FF6600 1px solid;
+}
+
+.error {
+    background-color: #FF3B2D;
+    color: #ffffff;
+    border: none;
+}
+
+.text-muted {
+    color: #A29DAB;
+}
+
+.text-primary {
+    color: #FF6600 !important;
+}
+
+.text-error {
+    color: #FF3B2D !important;
+}
+
+a,
+a:hover,
+a:focus {
+    border: none;
+    text-decoration: none;
+    outline: none;
+}
+
+a.dark,
+a.dark:hover,
+a.dark:focus {
+    color: #1C252C;
+}
+
+.text-small {
+    font-size: 12px;
+}
+
+.inactive-primary {
+    background-color: #FFD1B3;
+    color: #ffffff;
+}
+
+
+label {
+    color: #444248;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16.2px;
+}
+
+
+
+.transparent {
+    background-color: #ffffff00;
+    border: none;
+}
+
+.brand.inactive {
+    background-color: #FFD1B3;
+    color: #ffffff;
+}
+
+.brand.outline {
+    background-color: #ffffff00;
+    color: #FF6600;
+    border: #FF6600 1px solid;
+}
+
+.brand.disabled {
+    background-color: #ffffff00;
+    color: #1C252C;
+    border: #A29DAB 1px solid;
+}
+
+.brand.negative {
+    background-color: #FF3B2D;
+    color: #ffffff;
+}
+
+.li {
+    padding: 12px;
+    margin: 10px;
+    border-radius: 12px;
+    background-color: #F6F5F7;
 }

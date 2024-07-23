@@ -1,5 +1,5 @@
 
-import Session from './Session.js';
+import Session from './Session';
 import { jwtDecode } from "jwt-decode";
 
 

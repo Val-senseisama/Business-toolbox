@@ -1,23 +1,23 @@
 import React from 'react';
-import UserContext from './Helpers/UserContext.js';
+import UserContext from './Helpers/UserContext';
 import { useQuery } from '@apollo/client';
-import { isLoggedIn } from './Helpers/IsLoggedIn.js';
-import { CURRENT_USER, GET_CONFIG } from './GraphQL/Queries.js';
-import Session from './Helpers/Session.js';
+import { isLoggedIn } from './Helpers/IsLoggedIn';
+import { CURRENT_USER, GET_CONFIG } from './GraphQL/Queries';
+import Session from './Helpers/Session';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Loading } from './Components/Loading.js';
+import { Loading } from './Components/Loading';
 
 
 
 
-const Register = React.lazy(() => import('./Pages/Auth/Register.js'));
-const Login = React.lazy(() => import('./Pages/Auth/Login.js'));
-const Activate = React.lazy(() => import('./Pages/Auth/Activate.js'));
-const Forgot = React.lazy(() => import('./Pages/Auth/Forgot.js'));
-const Reset = React.lazy(() => import('./Pages/Auth/Reset.js'));
-const Logout = React.lazy(() => import('./Pages/Auth/Logout.js'));
+const Register = React.lazy(() => import('./Pages/Auth/Register'));
+const Login = React.lazy(() => import('./Pages/Auth/Login'));
+const Activate = React.lazy(() => import('./Pages/Auth/Activate'));
+const Forgot = React.lazy(() => import('./Pages/Auth/Forgot'));
+const Reset = React.lazy(() => import('./Pages/Auth/Reset'));
+const Logout = React.lazy(() => import('./Pages/Auth/Logout'));
 
-const Dashboard = React.lazy(() => import('./Pages/MenuPages/Dashboard.js'));
+const Dashboard = React.lazy(() => import('./Pages/MenuPages/Dashboard'));
 
 
 

@@ -2,10 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ApolloClient, InMemoryCache, ApolloProvider, ApolloLink, HttpLink } from '@apollo/client';
 import { jwtDecode } from "jwt-decode";
-import App from './App.js';
+import App from './App';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Session from './Helpers/Session.js';
+import Session from './Helpers/Session';
 
 const httpLink = new HttpLink({ uri: "http://localhost:4022" });
 

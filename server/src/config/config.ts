@@ -23,6 +23,7 @@ const CONFIG = {
 		SUBSCRIPTION_REMINDER_DAYS: [10, 5, 1, 0, -1, -2, -5, -10, -30, -60, -90, -120, -150, -180, -210, -240, -270, -300]
 	},
 	client: {
+		cdn: "http://localhost:4022/",
 
 	},
 	permissions: {

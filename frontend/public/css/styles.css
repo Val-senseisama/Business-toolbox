@@ -1,0 +1,91 @@
+@font-face {
+    font-family: 'Satoshi';
+    src: url('../fonts/Satoshi-Variable.woff2') format('woff2'),
+        url('../fonts/Satoshi-Variable.woff') format('woff'),
+        url('../fonts/Satoshi-Variable.ttf') format('truetype');
+    font-weight: 300 900;
+    font-display: swap;
+    font-style: normal;
+}
+
+
+html,
+body {
+    background-color: #ffffff;
+    font-family: Satoshi;
+    /* margin: 0px;
+    padding: 0px; */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #1C252C;
+    font-weight: 700;
+}
+
+h3 {
+    font-family: Satoshi;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 24.3px;
+    margin-bottom: 25px;
+}
+
+
+.loading {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99;
+}
+
+.form-control {
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 8px;
+    border: 1px solid #D4D2D8;
+}
+
+
+.btn {
+    /* width: Fixed (343px)px;
+    height: Fixed (48px)px; */
+    margin-top: 16px;
+    padding: 16px 24px 16px 24px;
+    border-radius: 100px;
+    font-family: Satoshi;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 18.9px;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+}
+
+
+
+a,
+a:hover,
+a:focus {
+    border: none;
+    text-decoration: none;
+    outline: none;
+}
+
+label {
+    color: #444248;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16.2px;
+    margin-top: 10px;
+}
+
+.transparent {
+    background-color: #ffffff00 !important;
+}

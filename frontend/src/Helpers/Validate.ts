@@ -26,4 +26,7 @@ export const Validate = {
             return inputString;
         }
     },
+    formatFloat: (n: number) => {
+        return parseFloat(n.toString()).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    }
 };

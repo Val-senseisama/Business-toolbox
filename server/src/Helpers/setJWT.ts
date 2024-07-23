@@ -46,7 +46,6 @@ const setJWT = async (userID: number) => {
 		{
 			id: oldUser.id,
 			name: `${oldUser.title} ${oldUser.firstname} ${oldUser.lastname}`,
-			email: `${oldUser.email}`,
 			customer: CUSTOMERS,
 			staff: STAFF
 		},

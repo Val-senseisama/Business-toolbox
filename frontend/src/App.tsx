@@ -1,5 +1,4 @@
 import React from 'react';
-import UserContext from './Helpers/UserContext';
 import { useQuery } from '@apollo/client';
 import { isLoggedIn } from './Helpers/IsLoggedIn';
 import { CURRENT_USER, GET_CONFIG } from './GraphQL/Queries';
@@ -24,24 +23,21 @@ const Dashboard = React.lazy(() => import('./Pages/MenuPages/Dashboard'));
 const App: React.FC = () => {
   const loggedIn = isLoggedIn();
 
-  const [user, setUser] = React.useState(JSON.parse(Session.getCookie('user') || '{}'));
-  const [config, setConfig] = React.useState(JSON.parse(Session.getCookie('config') || '{}'));
-
   useQuery(GET_CONFIG, {
     fetchPolicy: 'cache-and-network', //cache-first, cache-only, cache-and-network, network-only, no-cache, standby
-    onCompleted: data => {
-      setConfig(data.getConfig);
+    onCompleted: (data: { getConfig: any; }) => {
       Session.setCookie('config', JSON.stringify(data.getConfig));
     }
   });
 
-  useQuery(CURRENT_USER, {
-    fetchPolicy: 'network-only', //cache-first, cache-only, cache-and-network, network-only, no-cache, standby
+  const { loading } = useQuery(CURRENT_USER, {
+    fetchPolicy: 'cache-first', //cache-first, cache-only, cache-and-network, network-only, no-cache, standby
+    notifyOnNetworkStatusChange: true,
     onCompleted: data => {
-      setUser(data.currentUser);
       Session.setCookie('user', JSON.stringify(data.currentUser));
     }
   });
+
 
   if (!loggedIn) {
     return (
@@ -57,17 +53,16 @@ const App: React.FC = () => {
     );
   } else {
 
+    if (loading) return <Loading />;
     return (
-      <UserContext.Provider value={{ user, setUser, config, setConfig }}>
-        <Router>
-          <Routes>
-            <Route path={'/'} element={<React.Suspense fallback={<Loading />}> <Dashboard /> </React.Suspense>} />
-            <Route path={'/logout'} element={<Logout />} />
+      <Router>
+        <Routes>
+          <Route path={'/'} element={<React.Suspense fallback={<Loading />}> <Dashboard /> </React.Suspense>} />
+          <Route path={'/logout'} element={<Logout />} />
 
-            <Route path="*" element={<Dashboard />} />
-          </Routes>
-        </Router>
-      </UserContext.Provider>
+          <Route path="*" element={<Dashboard />} />
+        </Routes>
+      </Router>
     );
   }
 };

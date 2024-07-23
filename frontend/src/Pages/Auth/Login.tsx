@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Validate } from '../../Helpers/Validate';
 import OtpInput from 'react-otp-input';
 import Session from '../../Helpers/Session';
+import { PAGETITLE } from '../../Components/Typography';
 
 const Login = () => {
     const [email, setEmail] = React.useState('');
@@ -23,7 +24,7 @@ const Login = () => {
                     <div className='d-flex flex-wrap align-content-center'>
                         <Link className='dark me-5 fs-3 mt-3' to="/"><i className="bi bi-arrow-left"></i></Link>
                     </div>
-                    <h3>Login into your account</h3>
+                    <PAGETITLE>Login into your account</PAGETITLE>
                     <label>Email</label>
 
                     <INPUT type="email" value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} placeholder="Enter email address" />
@@ -49,7 +50,7 @@ const Login = () => {
                     <div className='d-flex flex-wrap align-content-center'>
                         <Link className='dark me-5 fs-3 mt-3' onClick={() => setStep(1)} to="#"><i className="bi bi-arrow-left"></i></Link>
                     </div>
-                    <h3>Enter Verification Code</h3>
+                    <PAGETITLE>Enter Verification Code</PAGETITLE>
                     <label className='mb-5'>Kindly enter the verification code sent to <div className='fs-6 mt-1 fw-bolder'>{email}</div></label>
                     <OtpInput
                         value={otp}

@@ -2,9 +2,9 @@ import React from 'react'
 
 const Reset = () => {
     return (
-        <div>
+        <div className='container'>
 
-        </div>
+        </div >
     )
 }
 

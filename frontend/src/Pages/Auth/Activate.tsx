@@ -2,9 +2,9 @@ import React from 'react'
 
 const Activate = () => {
     return (
-        <div>
+        <div className='container'>
 
-        </div>
+        </div >
     )
 }
 

@@ -67,10 +67,9 @@ export const FILE = (props: any) => {
             />
             {
                 text &&
-                <div className='d-flex justify-content-between align-content-center  w3-animate-zoom'>
+                <div className='d-flex align-items-center  w3-animate-fade'>
 
-                    <div>{text}b File</div>
-                    <BUTTON className="transparent" onClick={() => {
+                    <BUTTON className="btn-danger my-0 me-3 px-1 py-0 round-2" onClick={() => {
                         setText('');
                         const element = document.getElementById(id) as HTMLInputElement;
                         if (element) {
@@ -80,18 +79,21 @@ export const FILE = (props: any) => {
                     }}>
                         &times;
                     </BUTTON>
+                    <div>{text}b File</div>
                 </div>
             }
-            <BUTTON onClick={() => {
-                const element = document.getElementById(id) as HTMLInputElement;
-                element.click()
-            }} type='button' className={props.className || ''}>{props.children}</BUTTON>
+            {
+                !text && <BUTTON onClick={() => {
+                    const element = document.getElementById(id) as HTMLInputElement;
+                    element.click()
+                }} type='button' className={'my-1 mb-2 w3-animate-fade ' + props.className}>{props.children}</BUTTON>
+            }
         </div>
     );
 };
 
 export const IMAGE = (props: any) => {
-    const [image, setImage] = React.useState(props.value);
+    const [image, setImage] = React.useState(props.src);
     const id = props.id || uuid();
     // Call a function (passed as a prop from the parent component)
     // to handle the user-selected file 
@@ -123,8 +125,8 @@ export const IMAGE = (props: any) => {
             />
             {
                 image &&
-                <div className='mt-3 w3-display-container  w3-animate-zoom'>
-                    <div className='w3-center text-center'><img src={image} className="w-100" style={{ maxWidth: '250px' }} /></div>
+                <div className='mt-3 w3-display-container w3-animate-fade'>
+                    <div className=''><img src={image} style={{ height: '200px' }} /></div>
                     <BUTTON onClick={() => {
                         setImage('');
                         const element = document.getElementById(id) as HTMLInputElement;
@@ -132,7 +134,7 @@ export const IMAGE = (props: any) => {
                             element.value = '';
                         }
                         props.onChange('');
-                    }} className="btn-danger">
+                    }} className="btn-danger m-1 px-1 py-0 round-2 w3-animate-fade w3-display-topleft">
                         &times;
                     </BUTTON>
                 </div>

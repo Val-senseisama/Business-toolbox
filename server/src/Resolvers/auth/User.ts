@@ -59,7 +59,7 @@ export default {
             }
         },
 
-        async register(_: any, { email, password, title, firstname, lastname, phonenumber }: Record<string, string>, context: Record<string, any>) {
+        async register(_: any, { email, password, title, firstname, lastname, phonenumber, date_of_birth, gender }: Record<string, string>, context: Record<string, any>) {
             try {
                 if (!Validate.email(email)) {
                     ThrowError("Invalid Email.");
@@ -79,6 +79,13 @@ export default {
                 if (!Validate.phone(phonenumber)) {
                     ThrowError("Invalid phone number.");
                 }
+                if (!Validate.string(date_of_birth)) {
+                    ThrowError("Invalid date of birth.");
+                }
+                const Gender = ['Male', 'Female'];
+                if (!Gender.includes(gender)) {
+                    ThrowError("Invalid gender.");
+                }
 
                 let existingUser = await DBObject.findOne('users', { email }, { columns: 'id' });
                 if (existingUser) {
@@ -95,6 +102,8 @@ export default {
                     firstname: firstname,
                     lastname: lastname,
                     phone: formattedPhone,
+                    date_of_birth: DateTime.fromSQL(date_of_birth).toSQL({ includeOffset: false }),
+                    gender: gender,
 
                 };
 
@@ -104,14 +113,13 @@ export default {
                     ThrowError("Unable to create user.");
                 }
 
-                const verificationToken = uuid();
+                const verificationToken = MakeID(6);
 
                 await DBObject.insertOne('tokens', {
                     email,
                     token: verificationToken,
-                    user_id: userId,
                     status: 'PENDING',
-                    expires_at: DateTime.now().plus({ minutes: CONFIG.settings.PASSWORD_RESET_TOKEN_VALIDITY_MINUTES }).toSQL(),
+                    expires_at: DateTime.now().plus({ minutes: CONFIG.settings.PASSWORD_RESET_TOKEN_VALIDITY_MINUTES }).toSQL({includeOffset: false}),
                 });
 
                 try {
@@ -172,8 +180,6 @@ export default {
                 } catch (error) {
                     ThrowError(error);
                 }
-
-
 
                 SaveAuditTrail({
                     user_id: user.id,
@@ -346,9 +352,7 @@ export default {
         },
 
         async verifyEmail(_, { token, email }: Record<string, string>, context: Record<string, any>) {
-            if (!context.id) {
-                ThrowError('#RELOGIN');
-            }
+            
             if (!Validate.email(email)) {
                 ThrowError("Invalid Email");
             }
@@ -363,7 +367,7 @@ export default {
                     ThrowError('Invalid or expired token');
                 }
 
-                updated = await DBObject.updateOne('users', { email_verified: 1, status: "ACTIVE" }, { email });
+                updated = await DBObject.updateOne('users', { status: "ACTIVE" }, { email });
                 DBObject.updateOne('tokens', { status: "USED" }, { id: tokenRecord.id });
 
                 const user = await DBObject.findOne('users', { email });
@@ -445,7 +449,7 @@ export default {
             }
 
             try {
-                const user = await DBObject.findOne('users', { id: context.id });
+                const user = await DBObject.findOne('users', { id: context.id }, {columns: "id, title, firstname, lastname, email, phone, date_of_birth, gender, settings, data, created_at"});
                 if (!user) {
                     ThrowError("User not found.");
                 }
@@ -462,7 +466,14 @@ export default {
                     data = {};
                 }
                 return {
-                    ...user,
+                    id: user.id,
+                    title: user.title,
+                    firstname: user.firstname,
+                    lastname: user.lastname,
+                    email: user.email,
+                    phone: user.phone,
+                    date_of_birth: user.date_of_birth,
+                    gender: user.gender,
                     settings,
                     data
                 };

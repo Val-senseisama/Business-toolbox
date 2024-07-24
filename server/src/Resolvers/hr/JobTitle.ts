@@ -20,10 +20,13 @@ export default {
       if (!Validate.positiveInteger(company_id)) {
         ThrowError("Invalid company.")
       };
+      if(!Validate.positiveInteger(offset)){
+        ThrowError("Invalid offset.")
+      }
       const pageSize = _CONFIG.settings.PAGINATION_LIMIT || 30;
       const calculatedOffset = offset * pageSize;
       const query = `SELECT * FROM hr_job_titles
-              WHERE company_id = :company_id LIMIT :limit OFFSET :offset`;
+              WHERE company_id = :company_id LIMIT ${_CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`;
       const params = {
         company_id,
         limit: pageSize,

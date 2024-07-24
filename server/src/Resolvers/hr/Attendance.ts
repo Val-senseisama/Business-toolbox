@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { SaveAuditTrail, ThrowError } from "../../Helpers/Helpers.js";
 import { DBObject } from "../../Helpers/MySQL.js";
 import { Validate } from "../../Helpers/Validate.js";
@@ -82,10 +83,13 @@ export default {
       }
 
       const checkInTime = new Date().toISOString().split('T')[1].slice(0, 5);
-      const data = { company_id, employee_id, attendance_date: new Date().toISOString().split('T')[0], check_in: checkInTime, created_by: context.name };
+      const data = { attendance_date: DateTime.now().toSQLDate(), check_in: checkInTime, created_by: context.name };
 
       try {
-        const attendanceId = await DBObject.insertOne('hr_attendance', data);
+        const attendanceId = await DBObject.insertOne('hr_attendance', { company_id, employee_id, attendance_date: DateTime.now().toSQLDate(), check_in: checkInTime, created_by: context.name });
+        if (!Validate.positiveInteger(attendanceId)) {
+          ThrowError("Error recording check-in.");
+        }
         SaveAuditTrail({
           user_id: context.id,
           name: context.name,
@@ -93,8 +97,10 @@ export default {
           task: "CHECK_IN",
           details: `${context.name} checked in employee ${employee_id} on ${data.attendance_date} by ${checkInTime}`,
         });
+        
         return attendanceId;
       } catch (error) {
+        ;
         ThrowError("Error recording check-in.");
       }
     },
@@ -127,6 +133,7 @@ export default {
         });
         return updatedCount;
       } catch (error) {
+        ;
         ThrowError("Error recording check-out.");
       }
     },
@@ -164,6 +171,7 @@ export default {
         });
         return updatedCount;
       } catch (error) {
+        ;
         ThrowError("Error updating attendance.");
       }
     },
@@ -202,6 +210,7 @@ export default {
           const updated = await DBObject.updateOne('hr_attendance', data, condition);
         } catch (error) {
           await DBObject.rollback();
+          ;
           ThrowError("Error updating attendance.");
         }
       };

@@ -4,11 +4,25 @@ import { DateTime } from "luxon";
 import { Validate } from "../../Helpers/Validate.js";
 import CONFIG from "../../config/config.js";
 import hasPermission from "../../Helpers/hasPermission.js";
+import { setEngine } from "crypto";
 
+const getCompany = async (id: number, full = false) => {
+  const company = await DBObject.findOne(
+    "companies",
+    { id },
+    {
+      columns: [
+        "id", "name", "about", "address", "city", "state", "country",
+        "phone", "email", "website", "industry", "logo", "settings",
+        "plan", "plan_expiry", "created_at", "updated_at"
+      ].join(", ")
+    }
+  );
 
-const getCompany = async (id, full = false) => {
-  const company = await DBObject.findOne("companies", { id });
-  let accountingYears: Record<string, any> = { id: 0 }
+  if (!company) {
+    ThrowError("Company not found");
+  }
+
   let settings = {};
   if (company.settings) {
     try {
@@ -17,18 +31,22 @@ const getCompany = async (id, full = false) => {
       settings = {};
     }
   }
+
+  let accountingYear = null;
   if (full) {
-    accountingYears = await DBObject.findOne(`SELECT id FROM accounting_year WHERE company_id = :id AND status = 'ACTIVE'`, { id });
+    accountingYear = await DBObject.findOne(
+      "accounting_year",
+      { company_id: id, status: 'ACTIVE' },
+      { columns: "id, name, start_date, end_date" }
+    );
   }
 
   return {
     ...company,
     settings,
-    accounting_year_id: accountingYears.id,
+    accounting_year_id: accountingYear ? accountingYear.id : 0
   };
-}
-
-
+};
 
 export default {
   Query: {
@@ -50,11 +68,13 @@ export default {
           return [];
         }
 
-        let query = `SELECT * FROM companies WHERE id IN (:ids)`;
-        const companies = await DBObject.findDirect(query, { ids: companyIds });
-
-        if (!companies || companies.length === 0) {
-          return [];
+        let companies = [];
+        try {
+          companies = await Promise.all(
+            companyIds.map((id) => getCompany(id, true))
+          );
+        } catch (error) {
+          ThrowError("Failed fetching user companies.");
         }
 
         return companies;
@@ -63,7 +83,11 @@ export default {
       }
     },
 
-    async getFullCompanyProfile(_, { company_id }, context: Record<string, any>) {
+    async getFullCompanyProfile(
+      _,
+      { company_id },
+      context: Record<string, any>
+    ) {
       if (!context || !context.id) {
         ThrowError("#RELOGIN");
       }
@@ -74,117 +98,130 @@ export default {
 
       try {
         return await getCompany(company_id, true);
-
       } catch (error) {
+        
         ThrowError("Failed fetching company's profile.");
       }
     },
 
-    async getUsersLinkedToMyCompany(_, { company_id, offset }: { company_id: number; offset: number }, context: Record<string, any>) {
+    async getUsersLinkedToMyCompany(
+      _,
+      { company_id, offset }: { company_id: number; offset: number },
+      context: Record<string, any>
+    ) {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
 
-      if (!hasPermission({ context, company_id, tasks: ['manage_users'] })) { ThrowError('#NOACCESS'); }
+      if (!hasPermission({ context, company_id, tasks: ["manage_users"] })) {
+        ThrowError("#NOACCESS");
+      }
 
-      if (!Validate.integer(company_id)) {
+      if (!Validate.positiveInteger(company_id)) {
         ThrowError("Invalid company.");
       }
 
       try {
-        const query = `SELECT * FROM users WHERE id IN (SELECT user_id FROM user_company WHERE company_id = :company_id) LIMIT :limit OFFSET :offset`;
-
-        const params = { company_id, limit: CONFIG.settings.PAGINATION_LIMIT, offset };
-        const results = await DBObject.findDirect(query, params);
-
-        if (!results) {
+        let user_ids;
+        if(!offset){
+          user_ids = await DBObject.findMany("user_company", { company_id: company_id });
+        }else{
+          offset = offset * CONFIG.settings.PAGINATION_LIMIT;
+          user_ids = await DBObject.findDirect(`SELECT id, user_id FROM user_company WHERE company_id = :company_id LIMIT ${CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`, { company_id: company_id});
+        }
+        if (!user_ids) {
           return [];
         }
 
-        return results;
+        let userBasic = [];
+        try {
+          for(const user_id of user_ids){
+            userBasic.push(await DBObject.findOne("users", { id: user_id.user_id }));
+          }
+        } catch (error) {
+          return []
+        }
+
+        return userBasic;
       } catch (error) {
+        
         ThrowError("Failed fetching users linked to company.");
       }
     },
 
-    getAllCompanyBranches: async (_, { company_id, offset }, context: Record<string, any>) => {
+    getAllCompanyBranches: async (
+      _,
+      { company_id, offset },
+      context: Record<string, any>
+    ) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
 
-      if (!Validate.integer(company_id)) {
+      if (!Validate.positiveInteger(company_id)) {
         ThrowError("Invalid company.");
       }
-
-      const branches = await DBObject.findOne(`SELECT id, branch_id FROM user_company WHERE company_id = :company_id AND user_id = :user_id`);
-
-      if (!branches || !branches.id) {
-        return [];
-      }
-      let query, params;
-      if (branches.branch_id == 0) {
-        query = `SELECT * FROM branches WHERE company_id = :company_id LIMIT :limit OFFSET :offset `;
-        params = { company_id, limit: CONFIG.settings.PAGINATION_LIMIT, offset };
-      } else {
-        query = `SELECT * FROM branches WHERE id = :id AND  LIMIT :limit OFFSET :offset `;
-        params = { id: branches.branch_id, limit: CONFIG.settings.PAGINATION_LIMIT, offset };
-      }
-
-      try {
-        const results = await DBObject.findDirect(query, params);
-
-        if (!results) {
-          return []
+      let branches;
+      try{
+        if(!offset){
+          branches = await DBObject.findMany("branches", { company_id: company_id });
+        }else{
+          offset = offset * CONFIG.settings.PAGINATION_LIMIT;
+          branches = await DBObject.findDirect(`SELECT * FROM branches WHERE company_id = :company_id LIMIT ${CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`, { company_id: company_id });
         }
 
-        return results.map((branch) => {
-          let settings = {};
-          if (branch.settings) {
-            try {
-              settings = JSON.parse(branch.settings);
-            } catch (err) {
-              settings = {};
-            }
-          }
-          return {
-            ...branch,
-            settings,
-          }
-        });
-      } catch (error) {
+      }catch(error){
+        
         ThrowError("Failed fetching company's branches.");
       }
+      if(branches.length === 0){
+        return []
+      }
+      return branches;
     },
 
-    async getAllCompanyUsers(_, { company_id, offset }: { company_id: number; offset: number }, context: Record<string, any>) {
+    async getAllCompanyUsers(
+      _,
+      { company_id, offset }: { company_id: number; offset: number },
+      context: Record<string, any>
+    ) {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
 
-
-      if (!hasPermission({ context, company_id, tasks: ['manage_users'] })) { ThrowError('#NOACCESS'); }
+      if (!hasPermission({ context, company_id, tasks: ["manage_users"] })) {
+        ThrowError("#NOACCESS");
+      }
 
       if (!Validate.integer(company_id)) {
         ThrowError("Invalid company ID");
       }
 
-      if (!Validate.integer(offset)) {
-        ThrowError("Invalid offset");
-      }
-
+      
       try {
-        const query = `SELECT * FROM users WHERE id IN (SELECT user_id FROM user_company WHERE company_id = :company_id) LIMIT :limit OFFSET :offset`;
-
-        const params = { company_id, limit: CONFIG.settings.PAGINATION_LIMIT, offset };
-        const results = await DBObject.findDirect(query, params);
-
-        if (!results) {
+        let user_ids;
+        if(!offset){
+          user_ids = await DBObject.findMany("user_company", { company_id: company_id });
+        }else{
+          offset = offset * CONFIG.settings.PAGINATION_LIMIT;
+          user_ids = await DBObject.findDirect(`SELECT id, user_id FROM user_company WHERE company_id = :company_id LIMIT ${CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`, { company_id: company_id});
+        }
+        if (!user_ids) {
           return [];
         }
 
-        return results;
+        let userBasic = [];
+        try {
+          for(const user_id of user_ids){
+            userBasic.push(await DBObject.findOne("users", { id: user_id.user_id }));
+          }
+        } catch (error) {
+          return []
+        }
+
+        return userBasic;
       } catch (error) {
-        ThrowError("Failed fetching company's users.");
+        ThrowError("Failed fetching users linked to company.");
       }
     },
 
@@ -194,16 +231,17 @@ export default {
       }
 
       try {
-        const pendingLinks = await DBObject.findMany("user_company", { user_id: context.id, status: "PENDING" }, { columns: 'company_id' });
+        const pendingLinks = await DBObject.findMany("user_company",{ user_id: context.id, status: "PENDING" }, { columns: "company_id" });
 
         if (!pendingLinks || pendingLinks.length === 0) {
           return [];
         }
 
-        const companyIds = pendingLinks.map((pl) => getCompany(pl.company_id, false));
-        await Promise.all(companyIds);
-        return companyIds;
-
+        const companyIds = pendingLinks.map((pl) =>
+          getCompany(pl.company_id, true)
+        );
+        let result = await Promise.all(companyIds);
+        return result;
       } catch (error) {
         ThrowError("Failed fetching pending company's links");
       }
@@ -211,7 +249,24 @@ export default {
   },
 
   Mutation: {
-    async createCompany(_, { name, about, address, city, state, country, phone, email, website, industry, logo, settings, }, context: Record<string, any>) {
+    async createCompany(
+      _,
+      {
+        name,
+        about,
+        address,
+        city,
+        state,
+        country,
+        phone,
+        email,
+        website,
+        industry,
+        logo,
+        settings,
+      },
+      context: Record<string, any>
+    ) {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -253,7 +308,6 @@ export default {
         ThrowError("Invalid settings.");
       }
 
-
       const newCompany = {
         name,
         about,
@@ -272,16 +326,17 @@ export default {
       let companyId: number;
       try {
         companyId = await DBObject.insertOne("companies", newCompany);
-
         if (!Validate.positiveInteger(companyId)) {
           await DBObject.rollback();
           ThrowError("Failed to create company.");
         }
 
-
         await DBObject.insertOne("user_company", {
-          company_id: companyId, user_id: context.id, branch_id: 0, role_id: 0,
-          status: "ACTIVE", role_type: "OWNER"
+          company_id: companyId,
+          user_id: context.id,
+          email: context.email,
+          status: "ACTIVE",
+          role_type: "OWNER",
         });
       } catch (error) {
         await DBObject.rollback();
@@ -295,18 +350,62 @@ export default {
         name: context.name,
         task: "CREATE_COMPANY",
         details: `Created company: ${name}`,
+      }).catch((err) => {
+        /*  */
       });
-
-      return getCompany(companyId, true);
-
+      let companyDetails;
+      let accountYearId;
+      try {
+        companyDetails = await DBObject.findOne(
+          "companies",
+          { id: companyId },
+          {
+            columns:
+              "id, name, about, address, city, state, country, phone, email, website, industry, logo, settings, plan, plan_expiry, created_at, updated_at",
+          }
+        );
+        accountYearId = await DBObject.findOne(
+          "accounting_year",
+          { company_id: companyId },
+          { columns: "id, name" }
+        );
+      } catch (error) {
+        ;
+        ThrowError("Failed to fetch company details.");
+      }
+      companyDetails = {
+        ...companyDetails,
+        accounting_year_id: accountYearId ? accountYearId.id : 0,
+      };
+      return companyDetails;
     },
 
-    async updateCompany(_, { id, name, about, address, city, state, country, phone, email, website, industry, logo, settings, }, context: Record<string, any>) {
+    async updateCompany(
+      _,
+      {
+        id,
+        name,
+        about,
+        address,
+        city,
+        state,
+        country,
+        phone,
+        email,
+        website,
+        industry,
+        logo,
+        settings,
+      },
+      context: Record<string, any>
+    ) {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
 
-      if (!hasPermission({ context, company_id: id, tasks: ["manage_company"] })) {
+      if (
+        !hasPermission({ context, company_id: id, tasks: ["manage_company"] })
+      ) {
         ThrowError("#NOACCESS");
       }
 
@@ -376,10 +475,36 @@ export default {
           branch_id: 0,
           name: context.name,
           task: "UPDATE_COMPANY",
-          details: `Updated company with ID: ${id}. Changes made: ${JSON.stringify(updateData)}`,
+          details: `Updated company with ID: ${id}. Changes made: ${JSON.stringify(
+            updateData
+          )}`,
         });
 
-        return updated;
+        let companyDetails;
+        let accountYearId;
+        try {
+          companyDetails = await DBObject.findOne(
+            "companies",
+            { id: id },
+            {
+              columns:
+                "id, name, about, address, city, state, country, phone, email, website, industry, logo, settings, plan, plan_expiry, created_at, updated_at",
+            }
+          );
+          accountYearId = await DBObject.findOne(
+            "accounting_year",
+            { company_id: id },
+            { columns: "id, name" }
+          );
+        } catch (error) {
+          ;
+          ThrowError("Failed to fetch company details.");
+        }
+        companyDetails = {
+          ...companyDetails,
+          accounting_year_id: accountYearId ? accountYearId.id : 0,
+        };
+        return companyDetails;
       } catch (error) {
         ThrowError("Failed to update company.");
       }
@@ -390,7 +515,11 @@ export default {
         ThrowError("#RELOGIN");
       }
 
-      const role_type = await DBObject.findOne('user_company', { company_id: id, user_id: context.id }, { columns: 'role_type' });
+      const role_type = await DBObject.findOne(
+        "user_company",
+        { company_id: id, user_id: context.id },
+        { columns: "role_type" }
+      );
 
       if (role_type.role_type != "OWNER") {
         ThrowError("#NOACCESS");
@@ -401,7 +530,6 @@ export default {
         try {
           deleted = await DBObject.deleteOne("companies", { id });
         } catch (error) {
-
           ThrowError("Failed to delete company.");
         }
 
@@ -426,12 +554,16 @@ export default {
       }
     },
 
-    async addUserToCompany(_, { email, company_id, branch_id }, context: Record<string, any>) {
+    async addUserToCompany(
+      _,
+      { email, company_id, branch_id },
+      context: Record<string, any>
+    ) {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
 
-      if (!hasPermission({ context, company_id, tasks: ["manage_users"], })) {
+      if (!hasPermission({ context, company_id, tasks: ["manage_users"] })) {
         ThrowError("#NOACCESS");
       }
 
@@ -445,11 +577,16 @@ export default {
           ThrowError("User not found.");
         }
 
-        const user_company = await DBObject.findOne('user_company', { company_id, email }, { columns: 'role_type, status' });
+        const user_company = await DBObject.findOne(
+          "user_company",
+          { company_id, email },
+          { columns: "role_type, status" }
+        );
         if (user_company && user_company.status) {
-          ThrowError(`User already in company as ${user_company.status} ${user_company.role_type}.`);
+          ThrowError(
+            `User already in company as ${user_company.status} ${user_company.role_type}.`
+          );
         }
-
 
         let inserted = 0;
         try {
@@ -484,16 +621,23 @@ export default {
       }
     },
 
-    async removeUserFromCompany(_, { user_company_id, email, company_id }, context: Record<string, any>) {
+    async removeUserFromCompany(
+      _,
+      { user_company_id, email, company_id },
+      context: Record<string, any>
+    ) {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
 
-      if (!hasPermission({ context, company_id, tasks: ["manage_users"], })) {
+      if (!hasPermission({ context, company_id, tasks: ["manage_users"] })) {
         ThrowError("#NOACCESS");
       }
 
-      if (!Validate.positiveInteger(user_company_id) && !Validate.email(email)) {
+      if (
+        !Validate.positiveInteger(user_company_id) &&
+        !Validate.email(email)
+      ) {
         ThrowError("Invalid user");
       }
 
@@ -539,14 +683,24 @@ export default {
       }
     },
 
-    async createCompanyBranch(_, { company_id, name, description, settings }, context: Record<string, any>) {
+    async createCompanyBranch(
+      _,
+      { company_id, name, description, settings },
+      context: Record<string, any>
+    ) {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
 
-      if (!hasPermission({
-        context, company_id, tasks: ["manage_company"],
-      })) { ThrowError("#NOACCESS"); }
+      if (
+        !hasPermission({
+          context,
+          company_id,
+          tasks: ["manage_company"],
+        })
+      ) {
+        ThrowError("#NOACCESS");
+      }
 
       if (!Validate.positiveInteger(company_id)) {
         ThrowError("Invalid company");
@@ -565,7 +719,7 @@ export default {
           company_id,
           name,
           description,
-          settings: JSON.stringify(settings),
+          settings: settings ? JSON.stringify(settings) : "{}",
         };
 
         let branchId = 0;
@@ -589,21 +743,25 @@ export default {
         });
 
         return {
-          ...newBranch,
           id: branchId,
-          settings: JSON.parse(newBranch.settings),
+          name: name,
+          settings: settings ? JSON.parse(newBranch.settings) : {},
         };
       } catch (error) {
         ThrowError("Failed to create company branch");
       }
     },
 
-    async deleteCompanyBranch(_, { company_id, branch_id }, context: Record<string, any>) {
+    async deleteCompanyBranch(
+      _,
+      { company_id, branch_id },
+      context: Record<string, any>
+    ) {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
 
-      if (!hasPermission({ context, company_id, tasks: ["manage_company"], })) {
+      if (!hasPermission({ context, company_id, tasks: ["manage_company"] })) {
         ThrowError("#NOACCESS");
       }
 
@@ -617,14 +775,23 @@ export default {
       let deleted = 0;
       let branch;
       try {
-        branch = await DBObject.findOne("branches", { id: branch_id, company_id, });
-        deleted = await DBObject.deleteOne("branches", { id: branch_id, company_id, });
+        branch = await DBObject.findOne("branches", {
+          id: branch_id,
+          company_id,
+        });
+        if (!branch) {
+          ThrowError("Please select a valid branch.");
+        }
+        deleted = await DBObject.deleteOne("branches", {
+          id: branch_id,
+          company_id,
+        });
       } catch (error) {
         ThrowError("Failed to delete company branch");
       }
 
-      if (deleted < 1) {
-        ThrowError("Branch not found or already deleted");
+      if (!Validate.positiveInteger(deleted)) {
+        ThrowError("Could not delete company branch");
       }
 
       SaveAuditTrail({
@@ -638,15 +805,19 @@ export default {
         details: `Deleted branch ${branch.name} from company ${company_id}`,
       });
 
-      return branch_id;
+      return deleted;
     },
 
-    async updateCompanyBranch(_, { company_id, branch_id, name, description, settings }, context: Record<string, any>) {
+    async updateCompanyBranch(
+      _,
+      { company_id, branch_id, name, description, settings },
+      context: Record<string, any>
+    ) {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
 
-      if (!hasPermission({ context, company_id, tasks: ["manage_company"], })) {
+      if (!hasPermission({ context, company_id, tasks: ["manage_company"] })) {
         ThrowError("#NOACCESS");
       }
 
@@ -658,14 +829,13 @@ export default {
         ThrowError("Invalid branch ID");
       }
 
-      if (name && !Validate.string(name)) {
+      if (!name && !Validate.string(name)) {
         ThrowError("Invalid branch name");
       }
 
-      if (settings && !Validate.object(settings)) {
+      if (!settings && !Validate.object(settings)) {
         ThrowError("Invalid settings");
       }
-
 
       try {
         const updateData: any = {};
@@ -698,13 +868,21 @@ export default {
           details: `Updated branch ${branch_id} for company ${company_id}`,
         });
 
-        return await DBObject.findOne("branches", { id: branch_id, company_id, });
+        return {
+          id: branch_id,
+          name: name,
+          settings: settings ? JSON.parse(updateData.settings) : {},
+        };
       } catch (error) {
         ThrowError("Failed to update company branch");
       }
     },
 
-    async acceptPendingCompanyLink(_, { user_company_id, company_id }, context: Record<string, any>) {
+    async acceptPendingCompanyLink(
+      _,
+      { user_company_id, company_id },
+      context: Record<string, any>
+    ) {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -717,27 +895,43 @@ export default {
         ThrowError("Invalid company");
       }
 
+      let updated = 0;
       try {
-        let updated = 0;
         try {
           updated = await DBObject.updateOne(
             "user_company",
             { user_id: context.id, status: "ACTIVE" },
-            { id: user_company_id, company_id, user_id: context.id, email: context.email }
+            {
+              id: user_company_id,
+              company_id,
+              user_id: context.id,
+              email: context.email,
+            }
           );
         } catch (error) {
           ThrowError("Failed to accept pending company link");
         }
 
-        if (updated < 1) {
+        if (!Validate.positiveInteger(updated)) {
           ThrowError("No pending company link found or already accepted");
         }
       } catch (error) {
         ThrowError("Failed to accept pending company's link.");
       }
 
-      const companyData = await DBObject.findOne("companies", { id: company_id });
-
+      const companyData = await DBObject.findOne(
+        "companies",
+        { id: company_id },
+        {
+          columns:
+            "id, name, about, address, city, state, country, phone, email, website, logo",
+        }
+      );
+      const accounting_year_id = await DBObject.findOne(
+        "accounting_year",
+        { company_id, status: "ACTIVE" },
+        { columns: "id, name, start_date, end_date" }
+      );
       SaveAuditTrail({
         user_id: context.id,
         company_id,
@@ -748,20 +942,22 @@ export default {
         task: "ACCEPT_COMPANY_LINK",
         details: `${context.name} accepted pending link for company ${companyData.name}`,
       });
-
-      // if (!companyData) {
-      //   ThrowError("Company not found");
-      // }
-
-      return companyData;
+      return {
+        ...companyData,
+        accounting_year_id: accounting_year_id ? accounting_year_id.id : 0,
+      };
     },
 
-    updateCompanySettings: async (_, { company_id, settings }, context: Record<string, any>) => {
+    updateCompanySettings: async (
+      _,
+      { company_id, settings },
+      context: Record<string, any>
+    ) => {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
 
-      if (!hasPermission({ context, company_id, tasks: ["manage_company"], })) {
+      if (!hasPermission({ context, company_id, tasks: ["manage_company"] })) {
         ThrowError("#NOACCESS");
       }
 
@@ -777,12 +973,16 @@ export default {
         const updatedSettings = JSON.stringify(settings);
         let updated = 0;
         try {
-          updated = await DBObject.updateOne("companies", { settings: updatedSettings }, { id: company_id });
+          updated = await DBObject.updateOne(
+            "companies",
+            { settings: updatedSettings },
+            { id: company_id }
+          );
         } catch (error) {
           ThrowError("Failed to update company settings");
         }
 
-        if (updated < 1) {
+        if (!Validate.positiveInteger(updated)) {
           ThrowError("No changes made to company settings");
         }
 

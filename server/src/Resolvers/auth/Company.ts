@@ -99,7 +99,7 @@ export default {
       try {
         return await getCompany(company_id, true);
       } catch (error) {
-        
+
         ThrowError("Failed fetching company's profile.");
       }
     },
@@ -123,11 +123,11 @@ export default {
 
       try {
         let user_ids;
-        if(!offset){
+        if (!offset) {
           user_ids = await DBObject.findMany("user_company", { company_id: company_id });
-        }else{
+        } else {
           offset = offset * CONFIG.settings.PAGINATION_LIMIT;
-          user_ids = await DBObject.findDirect(`SELECT id, user_id FROM user_company WHERE company_id = :company_id LIMIT ${CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`, { company_id: company_id});
+          user_ids = await DBObject.findDirect(`SELECT id, user_id FROM user_company WHERE company_id = :company_id LIMIT ${CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`, { company_id: company_id });
         }
         if (!user_ids) {
           return [];
@@ -135,7 +135,7 @@ export default {
 
         let userBasic = [];
         try {
-          for(const user_id of user_ids){
+          for (const user_id of user_ids) {
             userBasic.push(await DBObject.findOne("users", { id: user_id.user_id }));
           }
         } catch (error) {
@@ -144,7 +144,7 @@ export default {
 
         return userBasic;
       } catch (error) {
-        
+
         ThrowError("Failed fetching users linked to company.");
       }
     },
@@ -162,19 +162,19 @@ export default {
         ThrowError("Invalid company.");
       }
       let branches;
-      try{
-        if(!offset){
+      try {
+        if (!offset) {
           branches = await DBObject.findMany("branches", { company_id: company_id });
-        }else{
+        } else {
           offset = offset * CONFIG.settings.PAGINATION_LIMIT;
           branches = await DBObject.findDirect(`SELECT * FROM branches WHERE company_id = :company_id LIMIT ${CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`, { company_id: company_id });
         }
 
-      }catch(error){
-        
+      } catch (error) {
+
         ThrowError("Failed fetching company's branches.");
       }
-      if(branches.length === 0){
+      if (branches.length === 0) {
         return []
       }
       return branches;
@@ -197,14 +197,14 @@ export default {
         ThrowError("Invalid company ID");
       }
 
-      
+
       try {
         let user_ids;
-        if(!offset){
+        if (!offset) {
           user_ids = await DBObject.findMany("user_company", { company_id: company_id });
-        }else{
+        } else {
           offset = offset * CONFIG.settings.PAGINATION_LIMIT;
-          user_ids = await DBObject.findDirect(`SELECT id, user_id FROM user_company WHERE company_id = :company_id LIMIT ${CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`, { company_id: company_id});
+          user_ids = await DBObject.findDirect(`SELECT id, user_id FROM user_company WHERE company_id = :company_id LIMIT ${CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`, { company_id: company_id });
         }
         if (!user_ids) {
           return [];
@@ -212,7 +212,7 @@ export default {
 
         let userBasic = [];
         try {
-          for(const user_id of user_ids){
+          for (const user_id of user_ids) {
             userBasic.push(await DBObject.findOne("users", { id: user_id.user_id }));
           }
         } catch (error) {
@@ -231,7 +231,7 @@ export default {
       }
 
       try {
-        const pendingLinks = await DBObject.findMany("user_company",{ user_id: context.id, status: "PENDING" }, { columns: "company_id" });
+        const pendingLinks = await DBObject.findMany("user_company", { user_id: context.id, status: "PENDING" }, { columns: "company_id" });
 
         if (!pendingLinks || pendingLinks.length === 0) {
           return [];

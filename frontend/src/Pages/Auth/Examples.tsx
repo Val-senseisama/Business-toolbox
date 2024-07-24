@@ -9,7 +9,7 @@ import { PAGETITLE } from '../../Components/Typography';
 const Login = () => {
     const [email, setEmail] = React.useState('');
     const [step, setStep] = React.useState(1);
-    const [otp, setOtp] = React.useState('');
+    const [otp, setOtp] = React.useState(''); 
     const [checkbox, setCheckbox] = React.useState(false);
 
     const handleCode = (value: string) => {
@@ -78,8 +78,6 @@ const Login = () => {
                         inputStyle="form-control flex-grow-1 fs-2 fw-bolder text-center"
                         renderInput={(props) => <input {...props} />}
                     />
-
-
                     <BLOCKBUTTON onClick={() => {
                         if (otp.length === 4) {
                             // do your stuff
@@ -87,7 +85,9 @@ const Login = () => {
                         }
                     }} className={otp.length === 4 ? 'primary mt-5' : 'inactive-primary mt-5'}>Verify</BLOCKBUTTON>
 
-                    <div className='text-center mt-3'><span className='text-muted'>Didn’t receive any code?</span> <BUTTON className='transparent text-primary p-0' onClick={() => Session.showAlert({ str: 'Do something here', type: 'warning' })}>Resend OTP</BUTTON></div>
+                    <div className='text-center mt-3'><span className='text-muted'>Didn’t receive any code?</span>
+                     <BUTTON className='transparent text-primary p-0' onClick={() => Session.showAlert({ str: 'Do something here', type: 'warning' })}>Resend OTP</BUTTON>
+                     </div>
                 </div>
             }
         </div >

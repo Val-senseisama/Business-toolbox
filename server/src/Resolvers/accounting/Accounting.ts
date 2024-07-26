@@ -1024,12 +1024,21 @@ export default {
         ThrowError("#NOACCESS");
       }
 
-      if (!Validate.integer(id)) {
-        ThrowError("Invalid transaction ID.");
+      if (!Validate.positiveInteger(id)) {
+        ThrowError("Invalid transaction.");
       }
-
+      if (!Validate.positiveInteger(company_id)) {
+        ThrowError("Invalid company.");
+      }
+      if (!Validate.positiveInteger(branch_id)) {
+        ThrowError("Invalid branch.");
+      }
+      let transactsCode = await DBObject.findOne("transactions", { id, company_id, branch_id });
+      if (!transactsCode) {
+        ThrowError("Transaction not found.");
+      }
       try {
-        await DBObject.deleteOne("transactions", { id });
+        await DBObject.deleteMany("transactions", { code: transactsCode.code });
         SaveAuditTrail({
           user_id: context.id,
           name: context.name,
@@ -1044,7 +1053,7 @@ export default {
       }
     },
 
-    async createPayroll(_, { company_id, branch_id, name, schedule }, context) {
+    async createPayroll(_, { company_id, branch_id, name, schedule, salaries_total }, context) {
       if (!context.id) {
         ThrowError("#RELOGIN");
       }
@@ -1069,6 +1078,9 @@ export default {
       if (!Validate.array(schedule)) {
         ThrowError("Invalid schedule.");
       }
+      if(!Validate.float(salaries_total)) {
+        ThrowError("Invalid Salaries total.")
+      }
 
       try {
         const payrollData = {
@@ -1076,6 +1088,7 @@ export default {
           branch_id,
           name,
           schedule: JSON.stringify(schedule),
+          salaries_total,
         };
         const insertId = await DBObject.insertOne("payrolls", payrollData);
         SaveAuditTrail({
@@ -1098,7 +1111,7 @@ export default {
 
     async updatePayroll(
       _,
-      { id, company_id, branch_id, name, schedule },
+      { id, company_id, branch_id, name, schedule, salaries_total },
       context
     ) {
       if (!context.id) {
@@ -1119,7 +1132,7 @@ export default {
       if (!Validate.positiveInteger(company_id)) {
         ThrowError("Invalid company.");
       }
-      if (!Validate.integer(branch_id)) {
+      if (!Validate.positiveInteger(branch_id)) {
         ThrowError("Invalid branch.");
       }
       if (!Validate.string(name)) {
@@ -1128,9 +1141,12 @@ export default {
       if (!Validate.array(schedule)) {
         ThrowError("Invalid schedule.");
       }
+      if(!Validate.float(salaries_total)) {
+        ThrowError("Invalid Salaries total.")
+      }
 
       try {
-        const updatedData = { name, schedule: JSON.stringify(schedule) };
+        const updatedData = { name, schedule: JSON.stringify(schedule), salaries_total };
         await DBObject.updateOne("payrolls", updatedData, { id, company_id, branch_id });
         SaveAuditTrail({
           user_id: context.id,
@@ -1165,6 +1181,10 @@ export default {
       }
       if (!Validate.positiveInteger(id)) {
         ThrowError("Invalid payroll ID.");
+      }
+      let payroll = await DBObject.findOne("payrolls", { id, company_id });
+      if (!payroll) {
+        ThrowError("Payroll not found.");
       }
 
       try {

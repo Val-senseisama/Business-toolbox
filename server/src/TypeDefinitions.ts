@@ -106,8 +106,8 @@ export default `#graphql
     postTransaction( company_id: Int, branch_id: Int, source: [TransactionComponent!], destination: [TransactionComponent!], value_date: String, remarks: String): [Transaction!]
     deleteTransaction(company_id: Int, branch_id: Int, id: Int): String #returns deleted transaction code
 
-    createPayroll(company_id: Int, branch_id: Int, name: String, schedule: [SalaryScheduleInput] ): Payroll!
-    updatePayroll(id: Int, company_id: Int, branch_id: Int, name: String, schedule: [SalaryScheduleInput] ): Payroll!
+    createPayroll(company_id: Int, branch_id: Int, name: String, schedule: [SalaryScheduleInput], salaries_total: Float ): Payroll!
+    updatePayroll(id: Int, company_id: Int, branch_id: Int, name: String, schedule: [SalaryScheduleInput], salaries_total: Float ): Payroll!
     deletePayroll(company_id: Int, id: Int): Int #returns deleted payroll id
 
     postPayrollLiability(company_id: Int, branch_id: Int, payroll_id: Int, header_name: String): Int

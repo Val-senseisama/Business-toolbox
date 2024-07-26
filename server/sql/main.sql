@@ -375,3 +375,5 @@ CREATE TABLE IF NOT EXISTS docs_access_log (
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
         FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE CASCADE
     );
+
+

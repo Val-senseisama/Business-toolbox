@@ -362,7 +362,8 @@ CREATE TABLE IF NOT EXISTS docs_documents (
         FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE CASCADE
     );
 
-CREATE TABLE IF NOT EXISTS docs_access_log (
+CREATE TABLE
+    IF NOT EXISTS docs_access_log (
         id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
         company_id INT UNSIGNED NOT NULL,
         branch_id INT UNSIGNED NOT NULL,
@@ -376,4 +377,9 @@ CREATE TABLE IF NOT EXISTS docs_access_log (
         FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE CASCADE
     );
 
-
+CREATE TABLE
+    IF NOT EXISTS ai_curated_email_messages (
+        id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+        tag VARCHAR(100) NOT NULL,
+        message TEXT NOT NULL
+    );

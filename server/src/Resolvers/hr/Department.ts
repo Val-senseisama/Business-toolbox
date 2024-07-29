@@ -21,7 +21,7 @@ export default {
       const pageSize = _CONFIG.settings.PAGINATION_LIMIT || 30;
       const calculatedOffset = offset * pageSize;
       const query = `SELECT * FROM hr_departments
-        WHERE company_id = :company_id LIMIT :limit OFFSET :offset`;
+        WHERE company_id = :company_id LIMIT ${_CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`;
       const params = {
         company_id,
         limit: pageSize,
@@ -63,7 +63,7 @@ export default {
 
       try {
         const insertId = await DBObject.insertOne('hr_departments', data);
-        if (!insertId) {
+        if (!Validate.positiveInteger(insertId)) {
           ThrowError('Failed to create department');
         }
         SaveAuditTrail({
@@ -74,7 +74,7 @@ export default {
           task: "CREATE_DEPARTMENT",
           details: `Created department: ${name}`
         })
-        return await DBObject.findOne("hr_departments", { id: insertId });
+        return await DBObject.findOne("hr_departments", { id: insertId }, {columns: "id, name, description, created_at, updated_at"});
       } catch (error) {
         ThrowError("Error creating department");
       }
@@ -100,6 +100,9 @@ export default {
       const updatedData = { name, description };
       try {
         const updatedID = await DBObject.updateOne("hr_departments", updatedData, { id, company_id });
+        if (!Validate.positiveInteger(updatedID)) {
+          ThrowError("Failed to update department.");
+        }
         SaveAuditTrail({
           user_id: context.id,
           name: context.name,
@@ -108,7 +111,7 @@ export default {
           task: "UPDATE_DEPARTMENT",
           details: `Updated department: ${id} to ${JSON.stringify(updatedData)}`,
         })
-        return await DBObject.findOne("hr_departments", { id });
+        return await DBObject.findOne("hr_departments", { id }, {columns: "id, name, description, created_at, updated_at"});
       } catch (error) {
         ThrowError("Error updating department information.");
       }
@@ -132,6 +135,9 @@ export default {
 
       try {
         const deletedID = await DBObject.deleteOne("hr_departments", { id, company_id });
+        if (!Validate.positiveInteger(deletedID)) {
+          ThrowError("Failed to delete department.");
+        }
         SaveAuditTrail({
           user_id: context.id,
           name: context.name,

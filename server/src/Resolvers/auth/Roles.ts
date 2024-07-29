@@ -18,16 +18,20 @@ export default {
         if (!hasPermission({ context, company_id, tasks: ['roles'] })) {
           ThrowError("#NOACCESS");
         }
+        if(!Validate.positiveInteger(offset)) {
+          ThrowError("Invalid offset");
+        }
 
         const pageSize = CONFIG.settings.PAGINATION_LIMIT || 30;
         const calculatedOffset = offset * pageSize;
 
-        const query = `SELECT id, name, description, permissions, created_at, updated_at FROM roles WHERE company_id = :company_id LIMIT :limit OFFSET :offset`;
+        const query = `SELECT id, name, json, status, created_at, updated_at FROM roles WHERE company_id = :company_id LIMIT ${CONFIG.settings.PAGINATION_LIMIT} OFFSET ${calculatedOffset}`;
 
-        const params = { company_id, limit: pageSize, offset: calculatedOffset };
+        const params = { company_id: company_id};
 
         return await DBObject.findDirect(query, params);
       } catch (error) {
+        
         ThrowError(error);
       }
     },
@@ -54,7 +58,7 @@ export default {
       }
 
       try {
-        const newRole = { company_id, name, json: JSON.stringify(json), };
+        const newRole = { company_id, name, json: JSON.stringify(json)};
         const roleId = await DBObject.insertOne("roles", newRole);
         if (!roleId) {
           ThrowError("Failed to create role");
@@ -70,7 +74,7 @@ export default {
           details: `Created role: ${name} for company ${company_id}`
         });
 
-        return await DBObject.findOne("roles", { id: roleId });
+        return await DBObject.findOne("roles", { id: roleId }, {columns: "id, name, json, status"});
       } catch (error) {
         ThrowError(error);
       }
@@ -95,8 +99,8 @@ export default {
       if (!Validate.positiveInteger(company_id)) {
         ThrowError("Invalid company");
       }
-
-      if (!Validate.string(status)) {
+      const statuses = ['ACTIVE', 'BLOCKED'];
+      if (!Validate.string(status) || !statuses.includes(status)) {
         ThrowError("Invalid role status");
       }
 
@@ -134,7 +138,7 @@ export default {
         ThrowError(error);
       }
 
-      return await DBObject.findOne("roles", { id });
+      return await DBObject.findOne("roles", { id }, {columns: "id, name, json, status"});
     },
 
     async deleteRole(_, { id, company_id }: Record<string, any>, context: Record<string, any>) {

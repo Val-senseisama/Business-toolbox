@@ -22,11 +22,14 @@ export default {
             if (!Validate.positiveInteger(employee_id)) {
                 ThrowError("Invalid employee.")
             };
+            if(!Validate.positiveInteger(offset)){
+                ThrowError("Invalid offset.")
+            }
 
             const pageSize = CONFIG.settings.PAGINATION_LIMIT || 30;
             const calculatedOffset = offset * pageSize;
             const query = `SELECT * FROM hr_qualifications
-              WHERE company_id = :company_id AND employee_id = :employee_id LIMIT :limit OFFSET :offset`;
+              WHERE company_id = :company_id AND employee_id = :employee_id LIMIT ${CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`;
 
             const params = {
                 company_id,
@@ -85,8 +88,12 @@ export default {
                     task: "CREATE_QUALIFICATION",
                     details: `Created ${type} qualification for employee ${employee_id}`
                 })
-                return insertedId;
+                if(!Validate.positiveInteger(insertedId)) {
+                    ThrowError("Error inserting HR Qualifications");
+                }
+                return await DBObject.findOne("hr_qualifications", { id: insertedId }, {columns: "id, company_id, employee_id, type, description, date_obtained, created_at, updated_at"});
             } catch (error) {
+                
                 ThrowError("Error inserting HR Qualifications");
             }
         },
@@ -134,8 +141,12 @@ export default {
                     task: "UPDATE_QUALIFICATION",
                     details: `Updated qualification ${id} for employee ${employee_id} to ${JSON.stringify(updatedData)}`,
                 })
-                return updatedID;
+                if(!Validate.positiveInteger(updatedID)){
+                    ThrowError("Error updating hr_qualifications");
+                }
+                return await DBObject.findOne("hr_qualifications", { id: updatedID }, {columns: "id, company_id, employee_id, type, description, date_obtained, created_at, updated_at"});
             } catch (error) {
+                
                 ThrowError("Error updating hr_qualifications");
             }
         },
@@ -169,6 +180,7 @@ export default {
                 })
                 return deletedID;
             } catch (error) {
+                
                 ThrowError("Error deleting HR qualification");
             }
         }

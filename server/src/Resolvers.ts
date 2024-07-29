@@ -8,6 +8,7 @@ import Roles from "./Resolvers/auth/Roles.js"
 import User from "./Resolvers/auth/User.js"
 import Accounting from "./Resolvers/accounting/Accounting.js"
 import Fixed_asset from "./Resolvers/fixed_asset/Fixed_asset.js"
+import Attendance from "./Resolvers/hr/Attendance.js"
 
 
 
@@ -24,6 +25,7 @@ export default {
     ...Roles.Query,
     ...Accounting.Query,
     ...Fixed_asset.Query,
+    ...Attendance.Query
 
   },
   Mutation: {
@@ -36,7 +38,8 @@ export default {
     ...User.Mutation,
     ...Roles.Mutation,
     ...Accounting.Mutation,
-    ...Fixed_asset.Mutation
+    ...Fixed_asset.Mutation,
+    ...Attendance.Mutation
 
   }
 }

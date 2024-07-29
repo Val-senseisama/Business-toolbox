@@ -1,15 +1,15 @@
-CREATE TABLE
-    IF NOT EXISTS roles (
+CREATE TABLE IF NOT EXISTS roles (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        company_id INT UNSIGNED NOT NULL,
         name VARCHAR(50) NOT NULL,
         json JSON,
         status ENUM ('ACTIVE', 'BLOCKED') DEFAULT 'ACTIVE',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS companies (
+CREATE TABLE IF NOT EXISTS companies (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
         about TEXT NOT NULL,
@@ -30,18 +30,18 @@ CREATE TABLE
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
-CREATE TABLE
-    IF NOT EXISTS branches (
+CREATE TABLE IF NOT EXISTS branches (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        company_id INT UNSIGNED NOT NULL,
         name VARCHAR(100) NOT NULL,
         description VARCHAR(255) NOT NULL,
         settings JSON DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS users (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(100) NOT NULL,
@@ -57,29 +57,27 @@ CREATE TABLE
         settings JSON DEFAULT NULL,
         data JSON DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     );
 
-CREATE TABLE
-    IF NOT EXISTS user_company (
-        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        user_id INT UNSIGNED NOT NULL,
-        company_id INT UNSIGNED NOT NULL,
-        branch_id INT UNSIGNED NOT NULL,
-        role_id INT UNSIGNED DEFAULT 0,
-        email VARCHAR(100) NOT NULL,
-        role_type ENUM ('OWNER', 'STAFF', 'CUSTOMER'),
-        limit_to_customers JSON DEFAULT NULL,
-        limit_to_branches JSON DEFAULT NULL,
-        status ENUM ('ACTIVE', 'PENDING', 'REJECTED') DEFAULT 'PENDING',
-        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT,
-        FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
-        FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE CASCADE,
-        FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE RESTRICT
-    );
+CREATE TABLE IF NOT EXISTS user_company (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    company_id INT UNSIGNED NOT NULL,
+    branch_id INT UNSIGNED DEFAULT NULL,
+    role_id INT UNSIGNED DEFAULT NULL,
+    email VARCHAR(100) NOT NULL,
+    role_type ENUM ('OWNER', 'STAFF', 'CUSTOMER'),
+    limit_to_customers JSON DEFAULT NULL,
+    limit_to_branches JSON DEFAULT NULL,
+    status ENUM ('ACTIVE', 'PENDING', 'REJECTED') DEFAULT 'PENDING',
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE RESTRICT,
+    FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE,
+    FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE SET NULL,
+    FOREIGN KEY (role_id) REFERENCES roles (id) ON DELETE SET NULL
+);
 
-CREATE TABLE
-    IF NOT EXISTS audit_trail (
+CREATE TABLE IF NOT EXISTS audit_trail (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         user_id INT UNSIGNED NOT NULL,
         company_id INT UNSIGNED NOT NULL,
@@ -95,8 +93,7 @@ CREATE TABLE
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS email_messages (
+CREATE TABLE IF NOT EXISTS email_messages (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED DEFAULT 0,
         destination VARCHAR(255) NOT NULL,
@@ -108,8 +105,7 @@ CREATE TABLE
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS tokens (
+CREATE TABLE IF NOT EXISTS tokens (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         email VARCHAR(100) NOT NULL,
         token VARCHAR(255) UNIQUE NOT NULL,
@@ -119,16 +115,14 @@ CREATE TABLE
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
-CREATE TABLE
-    IF NOT EXISTS logs (
+CREATE TABLE IF NOT EXISTS logs (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         task VARCHAR(100) NOT NULL,
         message TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
-CREATE TABLE
-    IF NOT EXISTS accounts (
+CREATE TABLE IF NOT EXISTS accounts (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         branch_id INT UNSIGNED NOT NULL,
@@ -148,8 +142,7 @@ CREATE TABLE
         FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS accounting_year (
+CREATE TABLE IF NOT EXISTS accounting_year (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         name VARCHAR(255) NOT NULL,
@@ -161,8 +154,7 @@ CREATE TABLE
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS transactions (
+CREATE TABLE IF NOT EXISTS transactions (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         branch_id INT UNSIGNED NOT NULL,
@@ -181,8 +173,7 @@ CREATE TABLE
         FOREIGN KEY (accounting_year_id) REFERENCES accounting_year (id) ON DELETE RESTRICT
     );
 
-CREATE TABLE
-    IF NOT EXISTS payrolls (
+CREATE TABLE IF NOT EXISTS payrolls (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         branch_id INT UNSIGNED NOT NULL,
@@ -213,8 +204,7 @@ CREATE TABLE
         FOREIGN KEY (branch_id) REFERENCES branches (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS hr_departments (
+CREATE TABLE IF NOT EXISTS hr_departments (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         name VARCHAR(255) NOT NULL,
@@ -224,8 +214,7 @@ CREATE TABLE
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS hr_job_titles (
+CREATE TABLE IF NOT EXISTS hr_job_titles (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         name VARCHAR(255) NOT NULL,
@@ -235,8 +224,7 @@ CREATE TABLE
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS hr_qualifications (
+CREATE TABLE IF NOT EXISTS hr_qualifications (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         employee_id INT UNSIGNED NOT NULL,
@@ -254,8 +242,7 @@ CREATE TABLE
         FOREIGN KEY (employee_id) REFERENCES accounts (id) ON DELETE RESTRICT
     );
 
-CREATE TABLE
-    IF NOT EXISTS hr_performance_reviews (
+CREATE TABLE IF NOT EXISTS hr_performance_reviews (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         employee_id INT UNSIGNED NOT NULL,
@@ -270,8 +257,7 @@ CREATE TABLE
         FOREIGN KEY (reviewer_id) REFERENCES accounts (id) ON DELETE RESTRICT
     );
 
-CREATE TABLE
-    IF NOT EXISTS hr_attendance (
+CREATE TABLE IF NOT EXISTS hr_attendance (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         employee_id INT UNSIGNED NOT NULL,
@@ -285,8 +271,7 @@ CREATE TABLE
         FOREIGN KEY (employee_id) REFERENCES accounts (id) ON DELETE RESTRICT
     );
 
-CREATE TABLE
-    IF NOT EXISTS fixed_asset_categories (
+CREATE TABLE IF NOT EXISTS fixed_asset_categories (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         name VARCHAR(100) NOT NULL,
@@ -304,8 +289,7 @@ CREATE TABLE
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS fixed_assets_items (
+CREATE TABLE IF NOT EXISTS fixed_assets_items (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         branch_id INT UNSIGNED NOT NULL,
@@ -335,8 +319,7 @@ CREATE TABLE
         FOREIGN KEY (category_id) REFERENCES fixed_asset_categories (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS fixed_assets_depreciation (
+CREATE TABLE IF NOT EXISTS fixed_assets_depreciation (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         company_id INT UNSIGNED NOT NULL,
         item_id INT UNSIGNED NOT NULL,
@@ -354,8 +337,7 @@ CREATE TABLE
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS docs_types (
+CREATE TABLE IF NOT EXISTS docs_types (
         id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
         company_id INT UNSIGNED NOT NULL,
         name VARCHAR(100) NOT NULL,
@@ -363,8 +345,7 @@ CREATE TABLE
         FOREIGN KEY (company_id) REFERENCES companies (id) ON DELETE CASCADE
     );
 
-CREATE TABLE
-    IF NOT EXISTS docs_documents (
+CREATE TABLE IF NOT EXISTS docs_documents (
         id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
         company_id INT UNSIGNED NOT NULL,
         branch_id INT UNSIGNED NOT NULL,

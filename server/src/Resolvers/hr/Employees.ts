@@ -19,11 +19,14 @@ export default {
       if (!Validate.positiveInteger(company_id)) {
         ThrowError("Invalid company.")
       };
+      if(!Validate.positiveInteger(offset)){
+        ThrowError("Invalid offset.")
+      }
 
       const pageSize = CONFIG.settings.PAGINATION_LIMIT || 30;
       const calculatedOffset = offset * pageSize;
       const query = `SELECT * FROM accounts
-              WHERE company_id = :company_id AND type = 'EMPLOYEE' LIMIT :limit OFFSET :offset`;
+              WHERE company_id = :company_id AND type = 'EMPLOYEE' LIMIT ${CONFIG.settings.PAGINATION_LIMIT} OFFSET ${offset}`;
       const params = {
         company_id,
         limit: pageSize,
@@ -66,7 +69,7 @@ export default {
       };
 
 
-      if (!Validate.string(details)) {
+      if (!Validate.object(details)) {
         ThrowError("Invalid details.")
       }
 
@@ -74,13 +77,13 @@ export default {
         company_id,
         branch_id,
         details: JSON.stringify(details),
-        type: 'EMPLOYEE',
-        category: 'STAFF',
+        type: 'LIABILITIES',
+        category: 'EMPLOYEE',
         balance: 0
       };
       try {
         const insertedID = await DBObject.insertOne("accounts", data);
-        if (!insertedID) {
+        if (!Validate.positiveInteger(insertedID)) {
           ThrowError("Failed to create employee.");
         }
         SaveAuditTrail({
@@ -94,6 +97,7 @@ export default {
 
         return await DBObject.findOne("accounts", { id: insertedID });
       } catch (error) {
+        
         log("CreateEmployee", error);
         ThrowError("Failed to create employee.");
       }

@@ -56,7 +56,7 @@ export default `#graphql
     #### Phase 1
     # User Management, Authentication and Session Management
     login(email: String, password: String): JWT!
-    register(email: String, password: String, title: String, firstname: String, lastname: String, phonenumber: String): Int!
+    register(email: String, password: String, title: String, firstname: String, lastname: String, phonenumber: String, date_of_birth: String, gender: Gender!): Int!
     forgotPassword(email: String): Int!
     resetPassword(email: String, token: String, password: String): JWT!
     updateProfile( title: String, firstname: String,lastname: String, phone: String, gender: String,date_of_birth: String): User!
@@ -106,8 +106,8 @@ export default `#graphql
     postTransaction( company_id: Int, branch_id: Int, source: [TransactionComponent!], destination: [TransactionComponent!], value_date: String, remarks: String): [Transaction!]
     deleteTransaction(company_id: Int, branch_id: Int, id: Int): String #returns deleted transaction code
 
-    createPayroll(company_id: Int, branch_id: Int, name: String, schedule: [SalaryScheduleInput] ): Payroll!
-    updatePayroll(id: Int, company_id: Int, branch_id: Int, name: String, schedule: [SalaryScheduleInput] ): Payroll!
+    createPayroll(company_id: Int, branch_id: Int, name: String, schedule: [SalaryScheduleInput], salaries_total: Float ): Payroll!
+    updatePayroll(id: Int, company_id: Int, branch_id: Int, name: String, schedule: [SalaryScheduleInput], salaries_total: Float ): Payroll!
     deletePayroll(company_id: Int, id: Int): Int #returns deleted payroll id
 
     postPayrollLiability(company_id: Int, branch_id: Int, payroll_id: Int, header_name: String): Int
@@ -147,7 +147,7 @@ export default `#graphql
     # Fixed Assets
     createAssetCategory(company_id: Int, name: String, description: String, depreciation_method: String, useful_life_years: Float, salvage_value: Float): AssetCategory!
     updateAssetCategory(id: Int, company_id: Int, name: String, description: String, depreciation_method: String, useful_life_years: Float, salvage_value: Float): AssetCategory!
-    deleteAssetCategory(id: Int): Int #returns deleted asset category id
+    deleteAssetCategory(id: Int, company_id: Int): Int #returns deleted asset category id
 
     createAssetItem(company_id: Int, branch_id: Int, vendor_id: Int, location_id: Int, category_id: Int, tag: String, serial_number: String, name: String, description: String, purchase_date: String, purchase_cost: Float, latest_value: Float, status: AssetStatus): FixedAsset!
     updateAssetItem(id: Int, company_id: Int, branch_id: Int, vendor_id: Int, location_id: Int, category_id: Int, tag: String, serial_number: String, name: String, description: String, purchase_date: String, purchase_cost: Float, latest_value: Float, status: AssetStatus): FixedAsset!
@@ -169,7 +169,7 @@ type JWT {
     email: String!
     phone: String
     date_of_birth: String
-    gender: String!
+    gender: Gender!
     data: JSON
     settings: JSON
     created_at: Int
@@ -200,8 +200,8 @@ type Company {
     settings: JSON
     plan: String
     plan_expiry: String
-    created_at: Int
-    updated_at: Int
+    created_at: String
+    updated_at: String
 }
 type CompanyBasic {
     id: Int
@@ -314,11 +314,15 @@ input EmployeeDetails {
 }
 
 enum AccountTypes {
-    ASSET
-    LIABILITY
+    ASSETS
+    LIABILITIES
     EQUITY
     INCOME
     EXPENSE
+}
+enum Gender {
+    Male
+    Female
 }
 enum AccountCategoryTypes {
     LEDGER

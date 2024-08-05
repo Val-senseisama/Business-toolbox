@@ -3,7 +3,7 @@ import { useQuery } from '@apollo/client';
 import { isLoggedIn } from './Helpers/IsLoggedIn';
 import { CURRENT_USER, GET_CONFIG } from './GraphQL/Queries';
 import Session from './Helpers/Session';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Loading } from './Components/Loading';
 
 
@@ -26,6 +26,8 @@ const App: React.FC = () => {
   useQuery(GET_CONFIG, {
     fetchPolicy: 'cache-and-network', //cache-first, cache-only, cache-and-network, network-only, no-cache, standby
     onCompleted: (data: { getConfig: any; }) => {
+      console.log("cache", data);
+      
       Session.setCookie('config', JSON.stringify(data.getConfig));
     }
   });
@@ -52,6 +54,9 @@ const App: React.FC = () => {
       </Router>
     );
   } else {
+if (loggedIn) {
+  return <Navigate to="/dashboard" />;
+}
 
     if (loading) return <Loading />;
     return (

@@ -96,7 +96,7 @@ const Login = () => {
     });
     const [isLoading, setIsLoading] = useState(false)
 
-   // const navigate = useNavigate();
+   const navigate = useNavigate();
 
     useEffect(() => {
         Session.remove('alerts');
@@ -108,8 +108,8 @@ const Login = () => {
             if (data.login.accessToken) {
                 Session.setCookie('x-access-token', data.login.accessToken);
                 Session.setCookie('x-refresh-token', data.login.refreshToken);
-                alert("Login Successful");
-                //navigate("/dashboard")
+                // alert("Login Successful");
+                navigate("/dashboard")
             }
         },
           onError: (error) => {

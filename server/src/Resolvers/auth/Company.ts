@@ -326,6 +326,7 @@ export default {
       let companyId: number;
       try {
         companyId = await DBObject.insertOne("companies", newCompany);
+        console.log(companyId)
         if (!Validate.positiveInteger(companyId)) {
           await DBObject.rollback();
           ThrowError("Failed to create company.");
@@ -339,8 +340,9 @@ export default {
           role_type: "OWNER",
         });
       } catch (error) {
+        console.log(error)
         await DBObject.rollback();
-        ThrowError("Failed to create company.");
+        ThrowError("Company not Created.");
       }
       await DBObject.commit();
       SaveAuditTrail({

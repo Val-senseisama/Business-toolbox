@@ -1,9 +1,9 @@
 export default {
-	smtpServer: "mail.privateemail.com",
-	smtpPort: 465,
-	smtpName: "Syllabux",
-	smtpFrom: "info@syllabux.app",
-	smtpSecure: true,
-	smtpUsername: "info@syllabux.app",
-	smtpPassword: "",
+smtpServer:"mail.lojiksquaq.com.ng",
+smtpPassword:"Koladepaul01.",
+smtpName:"Gokari",
+smtpPort:465,
+smtpUsername:"kolade@lojiksquaq.com.ng",
+smtpFrom:"kolade@lojiksquaq.com.ng",
+smtpSecure:true,
 };

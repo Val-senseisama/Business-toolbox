@@ -9,15 +9,29 @@ const template = fs.readFileSync(
 	"utf8"
 );
 
-let transporter = nodemailer.createTransport({
-	host: settings.smtpServer,
-	port: settings.smtpPort,
-	secure: settings.smtpSecure, // true for 465, false for other ports
-	auth: {
-		user: settings.smtpUsername, // generated ethereal user
-		pass: settings.smtpPassword, // generated ethereal password
-	},
-});
+
+ let transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: "daveistestingstuff2@gmail.com",
+      pass: "agujlxdivnalldue",
+    },
+  });
+
+// let transporter = nodemailer.createTransport({
+// 	host: settings.smtpServer,
+// 	port: settings.smtpPort,
+// 	secure: settings.smtpSecure, // true for 465, false for other ports
+// 	auth: {
+// 		user: settings.smtpUsername, // generated ethereal user
+// 		pass: settings.smtpPassword, // generated ethereal password
+// 	},
+// });
+
+console.log(settings);
+
 
 type MailInput = {
 	recipients: string;

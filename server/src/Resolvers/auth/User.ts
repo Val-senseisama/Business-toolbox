@@ -163,8 +163,8 @@ export default {
                 }
 
                 const token = MakeID(6);
-                const expiry = DateTime.now().plus({ minutes: CONFIG.settings.PASSWORD_RESET_TOKEN_VALIDITY_MINUTES }).toSQLDate();
-
+                const expiry = DateTime.now().plus({ minutes: CONFIG.settings.PASSWORD_RESET_TOKEN_VALIDITY_MINUTES }).toSQL({ includeOffset: false });
+                console.log("expiry:", expiry);
                 await DBObject.insertOne('tokens', { email, token, expires_at: expiry, status: "PENDING" });
 
                 try {
@@ -328,7 +328,7 @@ export default {
                 updated = await DBObject.updateOne('users', { password: hashedPassword }, { id: context.id });
             } catch (error) {
                 log("changePassword", error);
-                ThrowError("Unable to change password. Please ry again");
+                ThrowError("Unable to change password. Please try again");
             }
 
             if (updated < 1) {

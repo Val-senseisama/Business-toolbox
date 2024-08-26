@@ -1,15 +1,3 @@
-// import React from "react";
-// import { PAGETITLE } from "../../Components/Typography";
-
-// const Dashboard = () => {
-//   return (
-//     <div>
-//       <PAGETITLE>WELCOME TO THE DASHBOARD</PAGETITLE>
-      
-//     </div>
-//   );
-// };
-
 // export default Dashboard;
 
 import React from 'react'
@@ -17,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { PAGETITLE } from '../../Components/Typography'
 import { BUTTON } from '../../Components/Forms'
 const Dashboard = () => {
+
   return (
     <div className='container'>
        <PAGETITLE>WELCOME TO THE DASHBOARD</PAGETITLE>

@@ -539,5 +539,4 @@ type Attendance {
     updated_at: String
 }
 
-
 `;

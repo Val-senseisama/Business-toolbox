@@ -16,9 +16,12 @@ export const isLoggedIn = () => {
         if (isExpired || !decoded.id) {
             return false;
         }
+        
     } catch (err) {
         return false;
     }
+    console.log("logged in");
+    
     return true;
 };
 

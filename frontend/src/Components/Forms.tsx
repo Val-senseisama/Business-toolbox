@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import uuid from "../Helpers/UUID";
 import { readBase64, resizeImage } from "../Helpers/FileHandling";
-
+import eye from '../assets/icons/eye.png'
+import eyeSlash from '../assets/icons/eye-slash.png'
 
 
 export const BUTTON = (props: any) => {
@@ -184,4 +185,50 @@ export const SELECT = (props: {
             {props.children}
         </select>
     );
+};
+
+
+export const PASSWORDINPUT = (props: any) => {
+    const [ showPassword, setShowPassword ] = useState(props.show || false);
+    
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+    return (
+      <div className="input-group">
+        <input
+          type={showPassword ? "text" : "password"}
+          className={`form-control ${props.className || ""}`}
+          placeholder={props.placeholder}
+          value={props.value}
+          onChange={props.onChange}
+        />
+        <div className="input-group-append">
+          <button
+            type="button"
+            className="btn position-absolute  end-0 translate-middle-y bg-transparent border-0 text-muted"
+            onClick={togglePasswordVisibility}
+            style={{ right: "10px", top:"20px" }}>
+            <img
+              src={showPassword ? eye : eyeSlash}
+              alt="Toggle Password Visibility"
+              onClick={togglePasswordVisibility}
+            />
+          </button>
+        </div>
+      </div>
+    );
+ 
+};
+
+
+export const CUSTOMBLOCKBUTTON = (props: any) => {
+  return (
+    <button
+      type={props.type || "button"}
+      className={`btn w-100 ${props.className || ""}`}
+      onClick={props.onClick}>
+      {props.children}
+    </button>
+  );
 };

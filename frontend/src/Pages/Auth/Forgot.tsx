@@ -202,9 +202,9 @@ const [emailSsent, setEmailSent] = useState(false);
               </CUSTOMBLOCKBUTTON>
                 <BLOCKBUTTON
                   className="primary mt-4"
-                  onClick= {()=> { navigate("/login");}}
+                  onClick= {()=> { navigate("/reset");}}
                   
-                 >Go to Log In
+                 >Go to Reset
                 </BLOCKBUTTON>
               </>
             ) : (

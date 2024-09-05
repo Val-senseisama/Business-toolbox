@@ -8,6 +8,7 @@ import Session from '../../Helpers/Session';
 import { useMutation } from '@apollo/client';
 import { VERIFY_EMAIL } from '../../GraphQL/Mutations';
 import { APIResponse } from '../../Helpers/General';
+import logo from "../../assets/images/business-toolbox-icon.png";
 const Activate = () => {
     const [email, setEmail] = useState("")
     const [token, setToken] = useState("");
@@ -40,7 +41,6 @@ const Activate = () => {
         let hasErrors = true;
      if (!Validate.email(email)) {
             Session.saveAlert('Please enter a valid email address.', 'error');
-         console.log("invalid email");
          hasErrors = false
      }
          if (!hasErrors) {
@@ -72,35 +72,69 @@ const Activate = () => {
 
 
     return (
-        <div className='container'>
-                <div className={'w3-animate-right '}>
-                    <div className='d-flex flex-wrap align-content-center'>
-                        <Link className='dark me-5 fs-3 mt-3'  to="/login"><i className="bi bi-arrow-left"></i></Link>
-                    </div>
-                    <PAGETITLE>Enter Verification Code</PAGETITLE>
-                    <label className='mb-5'>Kindly enter the verification code sent to <div className='fs-6 mt-1 fw-bolder'>{email}</div></label>
-                    <form onSubmit={handleActivate}>
-                        <label>Email</label>
-                    <INPUT type="email" value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} placeholder="Enter email address" />
-                    <label>Verification Code</label>
-                    <INPUT type="text" value={token} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setToken(e.target.value)} placeholder="Enter your verification code" />
+      <div>
+        <div className="row">
+          <div className="py-3 col-12 col-lg-6 d-flex d-lg-block w-100 justify-content-center border-bottom">
+            <Link to="/" className="navbar-brand">
+              <img
+                src={logo}
+                alt="Business Toolbox"
+                className="px-5 py-3 img-fluid"
+              />
+            </Link>
+          </div>
+        </div>
+        <div className="container">
+          <div
+            className={
+              "w3-animate-right  pb-5 d-flex flex-column justify-items-center mt-5 align-items-center"
+            }>
+            <PAGETITLE className="text-center my-3 fs-3 fw-bold">
+              Enter Verification Code
+            </PAGETITLE>
+            <label className="mb-5 text-center">
+              Kindly enter the verification code sent to
+              <div className="fs-6 mt-1 fw-bolder">{email}</div>
+            </label>
+            <form
+              onSubmit={handleActivate}
+              className="col-10 col-sm-8 col-md-6 col-lg-5">
+              <label className="fw-bold fs-6">Email</label>
+              <INPUT
+                type="email"
+                value={email}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setEmail(e.target.value)
+                }
+                placeholder="Enter email address"
+              />
+              <label className="fw-bold fs-6">Verification Code</label>
+              <INPUT
+                type="text"
+                value={token}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setToken(e.target.value)
+                }
+                placeholder="Enter your verification code"
+              />
 
-                    <BLOCKBUTTON
-                        disabled={loading}
-                        type="submit"
-                    >Verify</BLOCKBUTTON>
+              <BLOCKBUTTON disabled={loading} type="submit">
+                Verify
+              </BLOCKBUTTON>
 
-                    <div className='text-center mt-3'><span className='text-muted'>Didn’t receive any code?</span> 
-                    <BUTTON className='transparent text-primary p-0' onClick={handleResendToken}>Resend OTP</BUTTON>
-                    </div>
-                    </form>
-
-
-
-                 
-                </div>
-        </div >
-    )
+              <div className="text-center mt-3">
+                <span className="text-muted">Didn’t receive any code?</span>
+                <BUTTON
+                  className="transparent text-primary mx-2 my-0 p-0"
+                  onClick={handleResendToken}>
+                  Resend OTP
+                </BUTTON>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
 }
 
 export default Activate

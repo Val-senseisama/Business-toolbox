@@ -93,7 +93,7 @@
 // export default Forgot;
 
 import React, { useState } from "react";
-import { BLOCKBUTTON, IMAGE, INPUT } from "../../Components/Forms";
+import { BLOCKBUTTON,  CUSTOMBLOCKBUTTON,  INPUT } from "../../Components/Forms";
 import { Validate } from "../../Helpers/Validate";
 import { PAGETITLE } from "../../Components/Typography";
 import { Link, useNavigate } from "react-router-dom";
@@ -108,12 +108,13 @@ import logo from "../../assets/images/business-toolbox-icon.png";
 const Forgot = () => {
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
-
+const [emailSsent, setEmailSent] = useState(false);
   const [forgotPassword, { loading }] = useMutation(FORGOT_PASSWORD, {
     onCompleted: (data) => {
       if (data.forgotPassword) {
         Session.saveAlert('Email sent successfully', 'success');
-        navigate('/reset')
+        setEmailSent(true);
+        
       }
       Session.showAlert({});
     },
@@ -147,29 +148,37 @@ const Forgot = () => {
               className="mr-5 px-5 py-3 img-fluid"
             />
           </Link>
-
         </div>
       </div>
 
       <div className="container">
         <div className="w3-animate-left d-flex flex-column justify-items-center h-75 align-items-center">
-          <form onSubmit={handleForgetPassword} className="mt-5 pt-5">
+          <form
+            onSubmit={handleForgetPassword}
+            className="col-10 col-sm-8 col-md-6 col-lg-5 mt-5 pt-5">
             <PAGETITLE className="text-center fs-3 fw-bold">
-              Forgot Password
+              {emailSsent ? "Check your mail" : "Forgot Password"}
             </PAGETITLE>
             <p className="text-center">
-              Enter your email address to get the password reset link
+              {emailSsent
+                ? "We have sent a password reset link to "
+                : "Enter your email address to get the password reset link"}
             </p>
-            <label className="fw-bold">Enter Your Email address</label>
-            <INPUT
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setEmail(e.target.value)
-              }
-              placeholder="Enter email address"
-            />
+            {emailSsent && <p className="text-center fw-bold fs-6">{email}</p>}
+            {!emailSsent && (
+              <>
+                <label className="fw-bold">Enter Your Email address</label>
+                <INPUT
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setEmail(e.target.value)
+                  }
+                  placeholder="Enter email address"
+                />
+              </>
+            )}
             {
               email.includes("@") && !Validate.email(email) ? (
                 <div className="text-error text-small mt-3 mb-4">
@@ -182,14 +191,34 @@ const Forgot = () => {
               //   an OTP to verify your email
               // </div>
             }
-            <BLOCKBUTTON
-              type="submit"
-              className={
-                Validate.email(email) ? "primary mt-4" : "inactive-primary mt-4"
-              }
-              disabled={!Validate.email(email) || loading}>
-              {loading ? "Sending..." : "Submit"}
-            </BLOCKBUTTON>
+            {emailSsent ? (
+              <><CUSTOMBLOCKBUTTON
+                type="submit"
+                className={Validate.email(email)
+                  ? "primary mt-4"
+                  : "inactive-primary mt-4"}
+                disabled={loading}>
+                {loading ? "Sending..." : <p>Didn't receive the email? <span className="text-primary">Click to resend</span></p>}
+              </CUSTOMBLOCKBUTTON>
+                <BLOCKBUTTON
+                  className="primary mt-4"
+                  onClick= {()=> { navigate("/login");}}
+                  
+                 >Go to Log In
+                </BLOCKBUTTON>
+              </>
+            ) : (
+              <BLOCKBUTTON
+                type="submit"
+                className={
+                  Validate.email(email)
+                    ? "primary mt-4"
+                    : "inactive-primary mt-4"
+                }
+                disabled={!Validate.email(email) || loading}>
+                {loading ? "Sending..." : "Submit"}
+              </BLOCKBUTTON>
+            )}
           </form>
         </div>
         <ToastContainer />

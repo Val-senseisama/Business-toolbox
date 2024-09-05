@@ -42,9 +42,8 @@ const Register = () => {
 
     const [register, { loading }] = useMutation(REGISTER, {
       onCompleted: () => {
-       // navigate('/login');
-        Session.saveAlert('Registration successful! Please log in.', 'success');
-        Session.showAlert({});
+        Session.saveAlert('Registration successful!.', 'success');
+        navigate("/activate");
       },
       onError: error => {
         if (error.networkError) {
@@ -112,7 +111,6 @@ const Register = () => {
     if (!isValid) {
       Session.showAlert({});
     }
-    console.log(formData);
     
     register({ variables: { ...formData } });
     return isValid;
@@ -266,7 +264,7 @@ const Register = () => {
                     target: { ...e.target, name: "gender" },
                   })
                 }
-                placeholder="Enter your gender"
+                placeholder="Enter your gender Male or Female"
               />
             </div>
 
@@ -281,7 +279,7 @@ const Register = () => {
                     target: { ...e.target, name: "phonenumber" },
                   })
                 }
-                placeholder="Enter your Phone Number (e.g +234)"
+                placeholder="Enter your Phone Number (e.g 080)"
               />
             </div>
 

@@ -40,7 +40,7 @@ export const openInBrowser = (url: string) => {
 };
 
 export const Redirect = (path: string) => {
-    (window as any).redirect(path);
+    (window as any).location.href = path;
 };
 
 export const APIResponse = (error: Record<string, any>) => {

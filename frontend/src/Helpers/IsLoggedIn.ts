@@ -4,11 +4,11 @@ import { jwtDecode } from "jwt-decode";
 
 
 export const isLoggedIn = () => {
-    const token = Session.get('x-access-token');
+    const token = Session.getCookie('x-access-token');
 
-    if (!token) {
-        return false;
-    }
+    if (!token) {  
+        return false;  
+    }    
     try {
         const decoded: Record<string, any> = jwtDecode(token);
 
@@ -20,7 +20,6 @@ export const isLoggedIn = () => {
     } catch (err) {
         return false;
     }
-    console.log("logged in");
     
     return true;
 };

@@ -9,18 +9,6 @@ const template = fs.readFileSync(
 	"utf8"
 );
 
-
-//  let transporter = nodemailer.createTransport({
-//     host: "smtp.gmail.com",
-//     port: 587,
-//     secure: false, // true for 465, false for other ports
-//     auth: {
-//       user: "daveistestingstuff2@gmail.com",
-//       pass: "agujlxdivnalldue",
-//     },
-//   });
-console.log("email settings:", settings);
-
 let transporter = nodemailer.createTransport({
 	host: settings.smtpServer,
 	port: settings.smtpPort,

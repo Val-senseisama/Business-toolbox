@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { GET_ALL_EMPLOYEES } from '../../../../GraphQL/Queries';
 import { PAGETITLE } from '../../../../Components/Typography';
 import { BUTTON } from '../../../../Components/Forms';
@@ -22,8 +22,11 @@ interface Employee {
 
 const Employees = () => {
   const [offset, setOffset] = useState(0);
-  const user = getUser();
-  const companyId = user.company_id;
+  const id = useParams().id as string;
+  
+  const companyId = parseInt(id);
+  console.log(companyId);
+  
 
   const { loading, error, data, fetchMore } = useQuery(GET_ALL_EMPLOYEES, {
     variables: { companyId, offset },
@@ -74,33 +77,26 @@ const Employees = () => {
       
       {data && data.getAllEmployees && (
         <>
-          <table>
+          <table className='table table-hover'>
             <thead>
-              <tr>
+              <tr className='table-primary'>
                 <th>ID</th>
-                <th>Company ID</th>
                 <th>Branch ID</th>
                 <th>Details</th>
                 <th>Type</th>
                 <th>Category</th>
-                <th>Balance</th>
-                <th>Created At</th>
-                <th>Updated At</th>
-                <th>Actions</th>
+                <th>Balance</th> 
               </tr>
             </thead>
             <tbody>
               {data.getAllEmployees.map((employee: Employee) => (
                 <tr key={employee.id}>
                   <td>{employee.id}</td>
-                  <td>{employee.company_id}</td>
                   <td>{employee.branch_id}</td>
                   <td>{JSON.stringify(employee.details)}</td>
                   <td>{employee.type}</td>
                   <td>{employee.category}</td>
                   <td>{employee.balance}</td>
-                  <td>{employee.created_at}</td>
-                  <td>{employee.updated_at}</td>
                   <td>
                     <BUTTON onClick={() => handleEdit(employee.id)}>EDIT</BUTTON>
                     <BUTTON onClick={() => handleDelete(employee.id)}>Delete</BUTTON>

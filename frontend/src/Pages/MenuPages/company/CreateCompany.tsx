@@ -27,6 +27,21 @@ const CreateCompany: React.FC = () => {
     settings: '{}'
 
   });
+
+   const [currentStep, setCurrentStep] = useState(1);
+
+   // Handle the next button click
+   const nextStep = () => {
+     if (currentStep < 3) {
+       setCurrentStep(currentStep + 1);
+     } else {
+       // Handle form submission here
+       alert("Form Submitted!");
+     }
+   };
+
+   // Handle the back button click (optional, for step navigation)
+
   const navigate = useNavigate();
 
   const [company] = useMutation(CREATE_COMPANY, {
@@ -104,167 +119,213 @@ const CreateCompany: React.FC = () => {
     company({ variables: { ...companyData,settings:JSON.parse(companyData.settings) } });
   };
 
+  const Step1 = () => {
+    return (
+      <>
+        <div className="mb-3">
+          <label>Company Logo:</label>
+          <IMAGE
+            id="logo"
+            onChange={handleLogoChange}
+            // className="btn btn-outline-primary"
+          >
+            Upload Logo
+          </IMAGE>
+        </div>
+        <div className="mb-2">
+          <label htmlFor="name" className="form-label">
+            Company Name:
+          </label>
+          <INPUT
+            type="text"
+            id="name"
+            name="name"
+            value={companyData.name}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setCompanyData({ ...companyData, name: e.target.value })
+            }
+            placeholder="Enter company name"
+          />
+        </div>
+        <div className="mb-2">
+          <label>Phone:</label>
+          <INPUT
+            type="tel"
+            id="phone"
+            name="phone"
+            value={companyData.phone}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setCompanyData({ ...companyData, phone: e.target.value })
+            }
+            placeholder="Enter phone number"
+          />
+        </div>
+      </>
+    );
+  }
+
+  const Step2 = () => {
+    return (
+      <>
+        <div className="mb-2">
+          <label>Industry:</label>
+          <INPUT
+            type="text"
+            id="industry"
+            name="industry"
+            value={companyData.industry}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setCompanyData({ ...companyData, industry: e.target.value })
+            }
+            placeholder="Enter industry"
+          />
+        </div>
+
+        <div className="col mb-2">
+          <label>About:</label>
+          <TEXTAREA
+            name="about"
+            value={companyData.about}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setCompanyData({ ...companyData, about: e.target.value })
+            }
+            placeholder="Enter company description"
+          />
+        </div>
+
+        <div className="mb-2">
+          <label>Website:</label>
+          <INPUT
+            type="url"
+            id="website"
+            name="website"
+            value={companyData.website}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setCompanyData({ ...companyData, website: e.target.value })
+            }
+            placeholder="Enter website URL"
+          />
+        </div>
+      </>
+    );
+  }
+
+  const Step3 = () => {
+    return (
+      <>
+        <div className="mb-2">
+          <label htmlFor="address" className="form-label">
+            Address:
+          </label>
+          <INPUT
+            type="text"
+            id="address"
+            name="address"
+            value={companyData.address}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setCompanyData({ ...companyData, address: e.target.value })
+            }
+            placeholder="Enter address"
+          />
+        </div>
+
+        <div className="mb-2">
+          <label htmlFor="city" className="form-label">
+            City:
+          </label>
+          <INPUT
+            type="text"
+            id="city"
+            name="city"
+            value={companyData.city}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setCompanyData({ ...companyData, city: e.target.value })
+            }
+            placeholder="Enter city"
+          />
+        </div>
+        <div className="mb-2">
+          <label htmlFor="state" className="form-label">
+            State:
+          </label>
+          <INPUT
+            type="text"
+            id="state"
+            name="state"
+            value={companyData.state}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setCompanyData({ ...companyData, state: e.target.value })
+            }
+            placeholder="Enter state"
+          />
+        </div>
+        <div className="mb-2">
+          <label htmlFor="country" className="form-label">
+            Country:
+          </label>
+          <INPUT
+            type="text"
+            id="country"
+            name="country"
+            value={companyData.country}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setCompanyData({ ...companyData, country: e.target.value })
+            }
+            placeholder="Enter country"
+          />
+        </div>
+      </>
+    );
+  }
+
  
   return (
-     <div className="container">
-<PAGETITLE>CREATE NEW COMPANY</PAGETITLE>
-<ToastContainer/>
-<form onSubmit={createCompany}>
-<div className="mb-3">
-    <label  >Company Logo:</label>
-    <IMAGE
-      id="logo"
-      onChange={handleLogoChange}
-      // className="btn btn-outline-primary"
-    >
-      Upload Logo
-    </IMAGE>
-  </div>
-  <div className="row">
-    <div className="col-md-6 mb-2">
-      <label htmlFor="name" className="form-label">Company Name:</label>
-      <INPUT
-        type="text"
-        id="name"
-        name="name"
-        value={companyData.name}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setCompanyData({ ...companyData, name: e.target.value })
-        }
-        placeholder="Enter company name"
-      />
-    </div>
-    <div className="col-md-6 mb-2">
-      <label >Industry:</label>
-      <INPUT
-        type="text"
-        id="industry"
-        name="industry"
-        value={companyData.industry}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setCompanyData({ ...companyData, industry: e.target.value })
-        }
-        placeholder="Enter industry"
-      />
-    </div>
-  </div>
+    <div className="container">
+      <div className="w3-animate-left pb-5 d-flex flex-column justify-items-center mt-5 align-items-center">
+        <PAGETITLE className="text-center my-3 fs-3 fw-bold">
+          CREATE NEW COMPANY
+        </PAGETITLE>
+        <p className="text-center">
+          Create your company here, you can add other details later
+        </p>
+        <ToastContainer />
+        <div className="d-flex justify-content-between w-50 mb-4">
+          <div className="progress w-50 mx-2">
+            <div
+              onClick={() => setCurrentStep(1)}
+              className={`step-indicator progress-bar ${
+                currentStep >= 1 ? "bg-primary" : "bg-light"
+              }`}
+              style={{ width: "100%" }}></div>
+          </div>
+          <div className="progress w-50 mx-2">
+            <div
+              onClick={() => setCurrentStep(2)}
+              className={`step-indicator progress-bar ${
+                currentStep >= 2 ? "bg-primary" : "bg-light"
+              }`}
+              style={{ width: "100%" }}></div>
+          </div>
+          <div className="progress w-50 mx-2">
+            <div
+              onClick={() => setCurrentStep(3)}
+              className={`step-indicator progress-bar ${
+                currentStep === 3 ? "bg-primary" : "bg-light"
+              }`}
+              style={{ width: "100%" }}></div>
+          </div>
+        </div>
 
+        <form
+          onSubmit={createCompany}
+          className="col-10 col-sm-8 col-md-6 col-lg-5">
+          {currentStep === 1 && <Step1 />}
 
-  <div className="row">
+          {currentStep === 2 && <Step2 />}
 
-  <div className="col mb-2">
-    <label>About:</label>
-    <TEXTAREA
-      name="about"
-      value={companyData.about}
-      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-        setCompanyData({ ...companyData, about: e.target.value })
-      }
-      placeholder="Enter company description"
-    />
-  </div>
-    <div className="col-md-6 mb-2">
-      <label htmlFor="address" className="form-label">Address:</label>
-      <INPUT
-        type="text"
-        id="address"
-        name="address"
-        value={companyData.address}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          setCompanyData({ ...companyData, address: e.target.value })
-        }
-        placeholder="Enter address"
-      />
-    </div>
+          {currentStep === 3 && <Step3 />}
 
-  </div>
-
-  <div className="row">
-  <div className="col-md-6 mb-2">
-      <label htmlFor="city" className="form-label">City:</label>
-      <INPUT
-        type="text"
-        id="city"
-        name="city"
-        value={companyData.city}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          setCompanyData({ ...companyData, city: e.target.value })
-        }
-        placeholder="Enter city"
-      />
-    </div>
-    <div className="col-md-6 mb-2">
-      <label htmlFor="state" className="form-label">State:</label>
-      <INPUT
-        type="text"
-        id="state"
-        name="state"
-        value={companyData.state}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          setCompanyData({ ...companyData, state: e.target.value })
-        }
-        placeholder="Enter state"
-      />
-    </div>
-    <div className="col-md-6 mb-2">
-      <label htmlFor="country" className="form-label">Country:</label>
-      <INPUT
-        type="text"
-        id="country"
-        name="country"
-        value={companyData.country}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          setCompanyData({ ...companyData, country: e.target.value })
-        }
-        placeholder="Enter country"
-      />
-    </div>
-    <div className="col-md-6 mb-2">
-      <label  >Phone:</label>
-      <INPUT
-        type="tel"
-        id="phone"
-        name="phone"
-        value={companyData.phone}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          setCompanyData({ ...companyData, phone: e.target.value })
-        }
-        placeholder="Enter phone number"
-      />
-    </div>
-  </div>
-
-  <div className="row">
-    <div className="col-md-6 mb-2">
-      <label  >Email:</label>
-      <INPUT
-        type="email"
-        id="email"
-        name="email"
-        value={companyData.email}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          setCompanyData({ ...companyData, email: e.target.value })
-        }
-        placeholder="Enter email"
-      />
-    </div>
-    <div className="col-md-6 mb-2">
-      <label  >Website:</label>
-      <INPUT
-        type="url"
-        id="website"
-        name="website"
-        value={companyData.website}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          setCompanyData({ ...companyData, website: e.target.value })
-        }
-        placeholder="Enter website URL"
-      />
-    </div>
-  </div>
-
-
-{/* 
+          {/* 
   <div className="mb-3">
     <label  >Settings (JSON):</label>
     <TEXTAREA
@@ -275,14 +336,22 @@ const CreateCompany: React.FC = () => {
       placeholder="Enter JSON settings"
     />
   </div> */}
-<div className="mb-3">
-  <BLOCKBUTTON type="submit">
-    {/* {loading ? 'Creating...' : 'Create Company'} */}
-    Create Company
-  </BLOCKBUTTON>
-</div>
-</form>
-</div>
+          <div className="mb-3">
+            {currentStep === 3 ? (
+              <BLOCKBUTTON type="submit">
+                {/* {loading ? 'Creating...' : 'Create Company'} */}
+                Create Company
+              </BLOCKBUTTON>
+            ) : (
+              <BLOCKBUTTON type="button" onClick={nextStep}>
+                {/* {loading ? 'Creating...' : 'Create Company'} */}
+                Next
+              </BLOCKBUTTON>
+            )}
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

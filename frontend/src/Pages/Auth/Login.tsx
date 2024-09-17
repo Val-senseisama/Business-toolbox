@@ -90,6 +90,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import logo from "../../assets/images/business-toolbox-icon.png";
 import google from "../../assets/icons/google.png";
+import { startTransition } from 'react';
 const Login = () => {
     const [loginData, setLoginData] = useState({
         email:"",
@@ -108,9 +109,10 @@ const Login = () => {
             setIsLoading(false);
             if (data.login.accessToken) {
                 Session.setCookie('x-access-token', data.login.accessToken);
-                Session.setCookie('x-refresh-token', data.login.refreshToken);
-                // alert("Login Successful");
+              Session.setCookie('x-refresh-token', data.login.refreshToken);
+              startTransition(() => {
                 navigate("/dashboard")
+              })
             }
         },
           onError: (error) => {

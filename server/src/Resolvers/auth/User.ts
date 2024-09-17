@@ -444,6 +444,8 @@ export default {
 
     Query: {
         async currentUser(_, __, context: Record<string, any>) {
+           // console.log(context);
+            
             if (!context.id) {
                 ThrowError("#RELOGIN");
             }

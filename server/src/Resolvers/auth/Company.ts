@@ -51,6 +51,8 @@ const getCompany = async (id: number, full = false) => {
 export default {
   Query: {
     async getMyCompanies(_, __, context: Record<string, any>) {
+      console.log(context);
+      
       if (!context || !context.id) {
         ThrowError("#RELOGIN");
       }
